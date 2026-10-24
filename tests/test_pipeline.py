@@ -55,7 +55,8 @@ def test_preview_survives_slow_inference_and_events_persist(tmp_path):
         deadline = time.perf_counter() + 5
         while time.perf_counter() < deadline:
             counts = worker.metrics.snapshot()["counts"]
-            if counts.get("preview", 0) >= initial.get("preview", 0) + 5:
+            if (counts.get("preview", 0) >= initial.get("preview", 0) + 5
+                    and counts.get("capture", 0) >= initial.get("capture", 0) + 5):
                 break
             time.sleep(0.01)
         # Prove actual progress while inference cannot possibly finish. CI
