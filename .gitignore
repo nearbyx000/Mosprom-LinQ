@@ -27,8 +27,3 @@ tpu_framework_*/
 
 # Local server logs
 *.log
-
-# Local HTTPS private keys and certificates
-certs/
-*.key
-*.pem

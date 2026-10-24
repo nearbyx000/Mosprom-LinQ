@@ -10,20 +10,14 @@
 <body>
 <main>
   <header><div><span class="eyebrow">МОСПРОМ · LinQ</span><h1>SafeSight</h1></div><span class="badge">Просмотр камеры</span></header>
-  <p class="intro">Прямой эфир с камеры компьютера или телефона.</p>
+  <p class="intro">Прямой эфир с локальной или сетевой камеры.</p>
   <section class="camera" aria-label="Видеонаблюдение">
     <div class="toolbar"><h2>Видеопоток</h2><span id="status" role="status" aria-live="polite">Подключение…</span></div>
     <div class="viewer">
-      <img id="stream" alt="Видеопоток камеры" hidden>
-      <video id="device-video" autoplay muted playsinline hidden></video>
+      <img id="stream" src="/video" alt="Видеопоток камеры">
       <div id="message" class="message" hidden><strong>Камера недоступна</strong><p>Проверьте подключение камеры и разрешение на её использование в настройках Windows или macOS. Затем нажмите «Подключить заново».</p></div>
     </div>
-    <div class="controls">
-      <label>Источник <select id="source"><option value="server">Камера сервера</option><option value="device">Камера этого устройства</option><option value="phone">Трансляция с телефона</option></select></label>
-      <label id="facing-control" hidden>Камера <select id="facing"><option value="environment">Основная</option><option value="user">Фронтальная</option></select></label>
-      <button id="reconnect" type="button">Подключить</button><button id="stop" type="button">Остановить</button>
-    </div>
-    <p id="hint" class="hint">Камера сервера: один зритель одновременно.</p>
+    <div class="controls"><p>Один зритель одновременно</p><button id="reconnect" type="button">Подключить заново</button></div>
   </section>
   <noscript><p>Для отображения состояния камеры и переподключения включите JavaScript.</p></noscript>
   <footer><span>SafeSight · MVP</span><nav aria-label="API"><a href="/docs">Документация API</a><a href="/health">Статус сервера</a></nav></footer>

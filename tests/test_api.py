@@ -42,8 +42,7 @@ def test_home():
         response = client.get("/")
     assert response.status_code == 200
     assert "SafeSight" in response.text
-    assert 'id="source"' in response.text
-    assert 'id="device-video"' in response.text
+    assert 'src="/video"' in response.text
     assert 'id="reconnect"' in response.text
 
 
