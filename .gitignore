@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+.env
+*.ovpn
+*credentials*
+*.key
+*.pem
+data/
+*.pt
+*.onnx
+*.tpu
+*.bin
+*.mp4
+.ipynb_checkpoints/
+tpu_framework_2026.9.45/

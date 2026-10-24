@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SafeSight — мониторинг промышленной безопасности</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,Segoe UI,Arial,sans-serif;background:#101924;color:#e5edf4}
+*{box-sizing:border-box} body{margin:0 auto;padding:20px;max-width:1450px}
+header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #324256;margin-bottom:25px}h1{font-size:26px;margin:12px 0}h2{font-size:18px;margin:0 0 12px}
+.small{font-size:13px;color:#a8bdcf}.warn{color:#ffc56a}.ok{color:#7ee8ba}
+.layout{display:grid;grid-template-columns:minmax(400px,2fr) minmax(330px,1fr);gap:18px}.panel{background:#1b2a38;border:1px solid #314356;border-radius:12px;padding:16px}.camera{width:100%;aspect-ratio:16/9;object-fit:contain;background:#090f16;border-radius:7px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}.metric{padding:12px;background:#111e29;border-radius:8px}.metric b{display:block;font-size:25px}.metric span{font-size:12px;color:#9cb1c2}
+.controls{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:10px 0}select,input{min-width:0;width:100%;padding:9px;border:1px solid #486073;background:#111e29;border-radius:6px;color:white}
+table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{text-align:left;padding:10px 7px;border-bottom:1px solid #354454;overflow-wrap:anywhere;font-size:13px}img.thumb{width:100%;max-width:160px;border-radius:5px}a{color:#8ccce7}button{cursor:pointer;background:#335c70;border:0;border-radius:6px;color:white;padding:9px}
+@media(max-width:970px){.layout{display:block}.panel{margin-bottom:16px}.controls{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header><div><h1>SafeSight <span class="small">/ промышленная безопасность</span></h1><div id="mode" class="warn">Загрузка статуса…</div></div><div id="clock" class="small"></div></header>
+<div class="layout"><section class="panel"><h2>Видеопоток <span id="camname" class="small"></span></h2><img id="live" class="camera" alt="Поток камеры"><div class="stats"><div class="metric"><b id="fps">—</b><span>FPS обработки</span></div><div class="metric"><b id="lat">—</b><span>Время вызова backend, мс</span></div><div class="metric"><b id="frames">—</b><span>Обработано кадров</span></div><div class="metric"><b id="health">—</b><span>Состояние камеры</span></div></div><p class="small">FPS и время инференса показаны отдельно. Задержка доставки тревоги пока не измеряется.</p></section>
+<section class="panel"><h2>События</h2><div class="small" id="count"></div><div class="controls"><select id="fc"><option value="">Все камеры</option></select><select id="fz"><option value="">Все зоны</option></select><select id="ft"><option value="">Все типы</option><option value="restricted_zone">Опасная зона</option><option value="no_helmet">Без каски</option></select><button onclick="loadEvents()">Обновить</button></div><div class="small">Фильтр по времени (UTC, ISO 8601 с часовым поясом):</div><div class="controls" style="grid-template-columns:1fr 1fr"><input id="start" placeholder="Начало: 2026-10-24T00:00:00+03:00"><input id="end" placeholder="Конец: 2026-10-25T00:00:00+03:00"></div><div style="max-height:650px;overflow:auto"><table><thead><tr><th>Дата / время</th><th>Нарушение</th><th>Камера / зона</th><th>Доказательство</th></tr></thead><tbody id="rows"></tbody></table></div></section></div>
+<script>
+const $=x=>document.getElementById(x); let cameraId=null;
+function t(v){return document.createTextNode(v===undefined?'':String(v));}
+function td(v){const node=document.createElement('td');node.append(t(v));return node;}
+async function loadStatus(){try{const s=await (await fetch('/api/status')).json();$('mode').textContent=s.mode==='demo'?'ДЕМО: цветовые прямоугольники, НЕ нейросеть и НЕ LinQ TPU':`${s.backend} · LinQ TPU verified: ${s.linq_tpu_verified}`;$('mode').className=s.mode==='demo'?'warn':'small';if(s.cameras.length){const c=s.cameras[0];cameraId=c.id;$('camname').textContent=c.name;$('fps').textContent=c.fps;$('lat').textContent=c.inference_ms;$('frames').textContent=c.frame_count;$('health').textContent=c.status;const cam=$('fc');if(cam.options.length===1){for(const item of s.cameras){cam.add(new Option(item.id,item.id));for(const z of item.zones){if(![...$('fz').options].some(o=>o.value===z.id))$('fz').add(new Option(z.id,z.id));}}}}}catch(err){$('mode').textContent='Ошибка API: '+err.message;}}
+function loadImage(){if(cameraId)$('live').src=`/api/frame/${encodeURIComponent(cameraId)}?ts=${Date.now()}`;}
+async function loadEvents(){const p=new URLSearchParams();for(const [id,key] of [['fc','camera_id'],['fz','zone_id'],['ft','violation_type'],['start','start'],['end','end']]){const v=$(id).value.trim();if(v)p.set(key,v);}let body=$('rows');try{const r=await fetch('/api/events?'+p.toString());if(!r.ok)throw new Error((await r.json()).detail);const data=await r.json();body.replaceChildren();$('count').textContent=`Найдено событий: ${data.length}`;for(const e of data){const tr=document.createElement('tr');tr.append(td(new Date(e.timestamp).toLocaleString('ru-RU')),td(e.violation_type),td(`${e.camera_id} / ${e.zone_id}`));const c=document.createElement('td'),a=document.createElement('a'),im=document.createElement('img');a.href='/evidence/'+encodeURIComponent(e.evidence_file);a.target='_blank';a.rel='noopener noreferrer';im.className='thumb';im.src=a.href;im.alt='Подтверждающий кадр';a.append(im);c.append(a);tr.append(c);body.append(tr);}}catch(err){$('count').textContent='Ошибка загрузки событий: '+err.message;}}
+$('clock').textContent=new Date().toLocaleString('ru-RU');setInterval(loadImage,500);setInterval(loadStatus,2000);setInterval(loadEvents,3000);loadStatus();loadEvents();
+</script>
+</body></html>
