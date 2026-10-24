@@ -110,6 +110,7 @@ class CameraWorker:
                 if hasattr(capture, "isOpened") and not capture.isOpened():
                     raise RuntimeError("Camera unavailable")
                 generation += 1
+                next_capture_at = time.perf_counter()
                 while not self.stopped.is_set():
                     started = time.perf_counter()
                     ok, image = capture.read()
@@ -124,7 +125,8 @@ class CameraWorker:
                     self.metrics.tick("capture")
                     self.update(status="running")
                     if paced:
-                        wait_until(self.stopped, started + 1 / self.fps)
+                        next_capture_at = max(next_capture_at + 1 / self.fps, started)
+                        wait_until(self.stopped, next_capture_at)
             except Exception as exc:
                 self.update(status=f"camera unavailable ({type(exc).__name__}); reconnecting")
                 self.metrics.tick("capture_errors")
@@ -134,7 +136,7 @@ class CameraWorker:
             self.stopped.wait(1)
 
     def preview_loop(self):
-        sequence, next_frame_at = 0, 0.0
+        sequence, next_frame_at = 0, time.perf_counter()
         while not self.stopped.is_set():
             wait_until(self.stopped, next_frame_at)
             if self.stopped.is_set():
@@ -160,7 +162,9 @@ class CameraWorker:
                 self.metrics.tick("preview")
             except (cv2.error, ValueError):
                 self.metrics.tick("preview_errors")
-            next_frame_at = started + 1 / self.fps
+            # Absolute deadlines avoid accumulating the scheduler's wake-up
+            # overhead every frame (visible as ~29 FPS when targeting 30).
+            next_frame_at = max(next_frame_at + 1 / self.fps, started)
 
     def enqueue_result(self, result):
         try:
