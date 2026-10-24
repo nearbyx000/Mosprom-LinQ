@@ -5,11 +5,12 @@ import os
 from pathlib import Path
 import time
 
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import FastAPI, HTTPException, Query, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from .pipeline import Pipeline
+from .detections import test_message
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -69,6 +70,37 @@ def create_app(config_path=None, data_dir=None, mode=None, camera_factory=None, 
             return app.state.pipeline.store.list_events(camera_id, zone_id, violation_type, start, end, limit)
         except ValueError as exc:
             raise HTTPException(422, str(exc)) from exc
+
+    @app.websocket("/ws/detections/{camera_id}")
+    async def detection_stream(websocket: WebSocket, camera_id: str, test: bool = False):
+        worker = app.state.pipeline.workers.get(camera_id)
+        if worker is None:
+            await websocket.close(code=1008, reason="Unknown camera")
+            return
+        await websocket.accept()
+        sequence, last_sent = 0, 0.
+        try:
+            while not worker.stopped.is_set():
+                if test:
+                    sequence += 1
+                    _, raw = worker.raw.get(timeout=0)
+                    height, width = raw.image.shape[:2] if raw else (480, 640)
+                    await websocket.send_json(test_message(camera_id, sequence, width, height))
+                    await asyncio.sleep(.5)
+                    continue
+                sequence, update = await asyncio.to_thread(worker.detection_updates.get, sequence, .25)
+                if update is not None:
+                    captured_at, payload = update
+                    payload = dict(payload, result_age_ms=max(0, (time.perf_counter() - captured_at) * 1000))
+                    await websocket.send_json(payload)
+                    last_sent = time.perf_counter()
+                elif time.perf_counter() - last_sent >= 1:
+                    await websocket.send_json({"type": "status", "camera_id": camera_id,
+                                               "source": worker.mode,
+                                               "inference_status": worker.status()["inference_status"]})
+                    last_sent = time.perf_counter()
+        except (WebSocketDisconnect, RuntimeError, OSError):
+            pass
 
     @app.get("/api/frame/{camera_id}")
     def frame(camera_id: str):

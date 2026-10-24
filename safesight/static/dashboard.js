@@ -4,6 +4,7 @@ let lastDetection = null;
 let lastEventId = null;
 let eventsBusy = false;
 const preview = new PreviewStream($("live"), text => { $("streamstate").textContent = text; });
+const overlays = new DetectionOverlay($("boxes"), $("live"), $("detection-state"), $("detection-updated"), $("detection-age"));
 const names = { capture_read: "Чтение камеры", jpeg_render: "Подготовка JPEG", capture_to_preview: "Кадр → JPEG готов",
   capture_to_stream_yield: "Кадр → отправка MJPEG", preprocessing: "Предобработка", serialization: "Сериализация",
   rpc_round_trip: "RabbitMQ RTT (сеть + очередь + TPU)", deserialization: "Десериализация", postprocessing: "YOLO decode + NMS",
@@ -35,7 +36,7 @@ async function loadStatus() {
       const row = document.createElement("tr"); row.append(td(names[key] || key), td(value.p50), td(value.p95)); body.append(row);
     }
     $("notes").textContent = "RTT объединяет сеть, очередь и TPU. Отдельное время TPU не измерено без телеметрии воркера. Метрика JPEG заканчивается на сервере; FPS браузера измеряется отдельно.";
-    if (cameraId !== camera.id) { cameraId = camera.id; preview.start(`/api/stream/${encodeURIComponent(cameraId)}`); }
+    if (cameraId !== camera.id) { cameraId = camera.id; preview.start(`/api/stream/${encodeURIComponent(cameraId)}`); overlays.start(cameraId, $("detection-source").value === "test"); }
     if (camera.last_detection_frame !== null && lastDetection !== camera.last_detection_frame) {
       lastDetection = camera.last_detection_frame;
       $("detected").hidden = false;
@@ -78,7 +79,8 @@ async function loadEvents() {
 
 $("reconnect").addEventListener("click", () => { if (cameraId) preview.start(`/api/stream/${encodeURIComponent(cameraId)}`); });
 $("refresh").addEventListener("click", loadEvents);
-window.addEventListener("pagehide", () => preview.stop());
+$("detection-source").addEventListener("change", () => { if (cameraId) overlays.start(cameraId, $("detection-source").value === "test"); });
+window.addEventListener("pagehide", () => { preview.stop(); overlays.stop(); });
 setInterval(loadStatus, 2000);
 setInterval(loadEvents, 3000);
 setInterval(() => {

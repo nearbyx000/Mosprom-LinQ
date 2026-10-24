@@ -18,6 +18,7 @@ from .rabbitmq import LinQClient, Settings
 from .runtime import Frame, Latest, Metrics
 from .storage import EventStore
 from .video import SyntheticVideo, annotate
+from .detections import message as detection_message
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +67,7 @@ class CameraWorker:
         self.client_factory = client_factory or (lambda metrics: LinQClient(Settings.from_env(), metrics))
         self.backend = backend
         self.raw, self.preview = Latest(), Latest()
+        self.detection_updates = Latest()
         self.results = queue.Queue(maxsize=8)
         self.metrics = Metrics()
         self.stopped = threading.Event()
@@ -93,6 +95,7 @@ class CameraWorker:
         self.stopped.set()
         self.raw.close()
         self.preview.close()
+        self.detection_updates.close()
         deadline = time.perf_counter() + 6
         for thread in self.threads:
             thread.join(timeout=max(0, deadline - time.perf_counter()))
@@ -163,6 +166,11 @@ class CameraWorker:
             next_frame_at = started + 1 / self.fps
 
     def enqueue_result(self, result):
+        packet, detections, task_id = result
+        # Emit before rules, evidence encoding and SQLite: none of these block
+        # the preview or the WebSocket detection path.
+        self.detection_updates.put((packet.captured_at, detection_message(
+            self.id, packet, detections, self.mode, task_id)))
         try:
             self.results.put_nowait(result)
         except queue.Full:
