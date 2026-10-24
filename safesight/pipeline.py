@@ -16,6 +16,7 @@ import cv2
 from .inference import DemoBackend, UltralyticsBackend
 from .logic import Zone, RuleEngine
 from .rabbitmq import LinQClient, Settings
+from .jpeg_gateway import JPEGGatewayClient, JPEGSettings
 from .runtime import Frame, Latest, Metrics
 from .storage import EventStore
 from .video import SyntheticVideo, annotate
@@ -65,7 +66,12 @@ class CameraWorker:
         self.store, self.evidence_dir, self.mode = store, evidence_dir, mode
         self.fps = fps
         self.camera_factory = camera_factory
-        self.client_factory = client_factory or (lambda metrics: LinQClient(Settings.from_env(), metrics))
+        if client_factory is not None:
+            self.client_factory = client_factory
+        elif os.getenv("LINQ_JPEG_ROUTE") and mode == "linq":
+            self.client_factory = lambda metrics: JPEGGatewayClient(JPEGSettings.from_env(), metrics)
+        else:
+            self.client_factory = lambda metrics: LinQClient(Settings.from_env(), metrics)
         self.backend = backend
         self.raw, self.preview = Latest(), Latest()
         self.detection_updates = Latest()

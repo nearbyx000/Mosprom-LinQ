@@ -174,3 +174,37 @@ preview WebSocket работает, но сообщает, что инферен
 ```
 
 Проверяются готовые правила/SQLite, API, latest-frame буфер, preview при медленном fake backend, evidence, точные RabbitMQ-заголовки, task ID, лимит запросов, таймауты, порядок ответов, letterbox/NMS и остановка потоков. Это проверки интеграции, а не аппаратный бенчмарк LinQ.
+
+
+## JPEG Gateway: actual LinQ TPU detections in WEB
+
+Start `SafeSight_JPEG_Gateway/gateway.py` inside the LinQ cloud environment,
+with existing `/auto/cache/<LOGIN>/yolov8n.tpu`. Keep that process running.
+Copy its unique `GATEWAY READY` route. This gateway uses real LinQ TPU
+(`PyTask` inside the cloud), **not** local or synthetic model inference.
+
+In the **local WEB server** environment, install dependencies:
+
+```bash
+python -m pip install -r requirements-linq.txt
+```
+
+Set `LINQ_JPEG_ROUTE` to the route from the remote process. Start as usual
+with `--mode linq`. For example on WSL/Linux:
+
+```bash
+export LINQ_JPEG_ROUTE=safesight.jpeg.REPLACE_WITH_CURRENT_GATEWAY_ROUTE
+python run.py --mode linq --source 0
+```
+
+Or set `LINQ_JPEG_ROUTE=...` in a local `.env` (do not commit it), and run
+`python run.py --mode linq --source 0 --env-file .env`. Open `/` (full
+Dashboard), not `/camera` (minimal preview). If the remote gateway is stopped,
+the UI will report no fresh detection; clean video continues.
+
+The existing `linq` transport remains available by unsetting
+`LINQ_JPEG_ROUTE` and configuring `LINQ_LOGIN`/`LINQ_PROGRAM_URI` and
+`tpu_pycloud_format`. JPEG transport needs only `pika` locally. Preview
+is asynchronous and independent of cloud RTT; expect ~2 detection updates/s
+under previously measured ~488 ms sequential median, **not** 30 TPU FPS.
+Test with `python -m pytest tests/test_jpeg_gateway.py -q` (fake replies).
