@@ -1,6 +1,7 @@
 """Tests that do not require an actual camera device."""
 
 from unittest.mock import patch
+import asyncio
 
 import cv2
 import numpy as np
@@ -41,7 +42,8 @@ def test_home():
         response = client.get("/")
     assert response.status_code == 200
     assert "SafeSight" in response.text
-    assert 'src="/video"' in response.text
+    assert 'id="source"' in response.text
+    assert 'id="device-video"' in response.text
     assert 'id="reconnect"' in response.text
 
 
@@ -127,3 +129,47 @@ def test_camera_mirror(monkeypatch, mirror, expected_calls):
     with patch.object(backend.cv2, "flip", wraps=cv2.flip) as flip:
         backend.encode_frame(FakeCamera())
     assert flip.call_count == expected_calls
+
+
+@pytest.mark.parametrize("platform,backend_name", [
+    ("win32", "CAP_DSHOW"),
+    ("darwin", "CAP_AVFOUNDATION"),
+    ("linux", None),
+])
+def test_native_camera_backend(monkeypatch, platform, backend_name):
+    monkeypatch.setenv("CAMERA_SOURCE", "0")
+    with patch.object(backend.sys, "platform", platform), patch.object(backend.cv2, "VideoCapture") as capture:
+        backend.open_camera()
+    expected = (0, getattr(cv2, backend_name)) if backend_name else (0,)
+    capture.assert_called_once_with(*expected)
+
+
+def test_windows_network_camera_uses_default_backend(monkeypatch):
+    source = "rtsp://192.168.1.105/live"
+    monkeypatch.setenv("CAMERA_SOURCE", source)
+    with patch.object(backend.sys, "platform", "win32"), patch.object(backend.cv2, "VideoCapture") as capture:
+        backend.open_camera()
+    capture.assert_called_once_with(source)
+
+
+def test_closing_stream_releases_camera():
+    fake = FakeCamera()
+
+    async def close_after_first_frame():
+        with patch.object(backend, "open_camera", return_value=fake):
+            response = backend.video()
+        frame = await anext(response.body_iterator)
+        assert frame.startswith(b"--frame")
+        assert not fake.released
+        await response.body_iterator.aclose()
+        assert fake.released
+
+    asyncio.run(close_after_first_frame())
+
+
+def test_response_cleanup_releases_camera_before_iteration():
+    fake = FakeCamera()
+    with patch.object(backend, "open_camera", return_value=fake):
+        response = backend.video()
+    asyncio.run(response.background())
+    assert fake.released
