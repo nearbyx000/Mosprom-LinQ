@@ -62,6 +62,16 @@ def create_app(config_path=None, data_dir=None, mode=None, camera_factory=None, 
     def status():
         return app.state.pipeline.status()
 
+    @app.get("/api/warnings")
+    def warnings():
+        cameras = []
+        for worker in app.state.pipeline.workers.values():
+            state = worker.status()
+            cameras.append({"camera_id": worker.id, "source": worker.mode,
+                            "fresh": state["warnings_fresh"], "updated_at": state["warnings_updated_at"],
+                            "frame_id": state["warnings_frame_id"], "warnings": state["active_warnings"]})
+        return {"cameras": cameras, "active_count": sum(len(c["warnings"]) for c in cameras)}
+
     @app.get("/api/events")
     def events(camera_id: str | None = None, zone_id: str | None = None,
                violation_type: str | None = None, start: str | None = None, end: str | None = None,

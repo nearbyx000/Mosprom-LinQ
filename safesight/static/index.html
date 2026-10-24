@@ -2,30 +2,49 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SafeSight — мониторинг промышленной безопасности</title>
+<title>SafeSight — Stream CV</title>
 <link rel="stylesheet" href="/dashboard/dashboard.css">
-<script src="/dashboard/stream.js" defer></script><script src="/dashboard/detections.js" defer></script><script src="/dashboard/dashboard.js" defer></script>
+<script src="/dashboard/stream.js" defer></script><script src="/dashboard/detections.js" defer></script><script src="/dashboard/operations.js" defer></script><script src="/dashboard/dashboard.js" defer></script>
 </head>
 <body>
-<header><div><h1>SafeSight <span class="small">/ LinQ</span></h1><p id="mode" class="warn">Загрузка статуса…</p></div><a href="/docs">API</a></header>
-<div class="layout"><div>
-<section class="panel"><h2>Прямой эфир <span id="camname" class="small"></span></h2>
-<div class="live-view"><canvas id="live" class="camera" width="640" height="480" aria-label="Видеопоток камеры"></canvas><canvas id="boxes" aria-label="Рамки детекций поверх видео"></canvas></div>
-<div class="controls"><label for="detection-source">Детекции:</label><select id="detection-source"><option value="live">Рабочий детектор / LinQ</option><option value="test">Тестовые JSON · НЕ TPU</option></select><span id="detection-state" role="status">Подключение WebSocket…</span></div>
-<p class="small">Последнее обновление: <time id="detection-updated">—</time> · <span id="detection-age">Нет результатов</span><br>Рамки последнего ответа; скрываются через 1,5 с от захвата. Видео работает независимо.</p>
-<div class="controls"><span id="streamstate" role="status">Подключение…</span><button id="reconnect" type="button">Подключить заново</button></div>
-<div class="stats">
-<div class="metric"><b id="capturefps">—</b><span>FPS захвата</span></div><div class="metric"><b id="previewfps">—</b><span>FPS JPEG-preview</span></div><div class="metric"><b id="browserfps">—</b><span>FPS отображения в браузере</span></div>
-<div class="metric"><b id="inferencefps">—</b><span>Детекций / с</span></div><div class="metric"><b id="inflight">—</b><span>Запросов к TPU одновременно</span></div><div class="metric"><b id="age">—</b><span>Возраст последней детекции</span></div>
-</div>
-<p class="small">Камера: <span id="health">—</span><br>Инференс: <span id="inferhealth">—</span><br>Журнал: <span id="eventhealth">—</span></p>
-<p class="small">Пропущено кадров перед инференсом: <span id="drops">0</span>. Видео и детекции обновляются независимо.</p>
+<header class="app-header"><div class="brand"><span class="brand-mark">S</span><div><h1>SafeSight <span>/ LinQ</span></h1><p>Промышленная безопасность · операторский пульт</p></div></div><div class="header-status"><span class="live-dot"></span><span id="mode">Загрузка статуса…</span></div></header>
+<nav class="view-nav" aria-label="Разделы мониторинга">
+<button data-view="clean" type="button"><span>01</span> Stream clean</button>
+<button data-view="cv" class="selected" aria-current="page" type="button"><span>02</span> Stream CV</button>
+<button data-view="warns" type="button"><span>03</span> Warns <b id="warn-count">—</b></button>
+<button data-view="backlog" type="button"><span>04</span> Backlog</button>
+</nav>
+<div class="workspace"><main>
+<section class="panel" data-panel="stream">
+<div class="section-heading"><div><p class="eyebrow">LIVE MONITORING</p><h2 id="stream-title">Stream CV</h2><p id="stream-description" class="small">Видео, опасные зоны и последние результаты распознавания.</p></div><span id="camname" class="chip">Камера</span></div>
+<div class="live-view"><canvas id="live" class="camera" width="640" height="480" aria-label="Видеопоток камеры"></canvas><canvas id="boxes" aria-label="Рамки детекций поверх видео"></canvas><span id="view-badge" class="video-badge">CV OVERLAY</span></div>
+<div class="stream-footer"><span id="streamstate" role="status">Подключение…</span><span><b id="browserfps">—</b> FPS</span><button id="reconnect" type="button" class="secondary">Переподключить видео</button></div>
+<div id="cv-controls"><div class="controls"><label for="detection-source">Источник детекций</label><select id="detection-source"><option value="live">Рабочий детектор / LinQ</option><option value="test">Тестовые JSON · НЕ TPU</option></select><span id="detection-state" role="status">Подключение WebSocket…</span></div><p class="small">Обновлено: <time id="detection-updated">—</time> · <span id="detection-age">Нет результатов</span>. Рамки скрываются через 1,5 с от захвата.</p></div>
 </section>
-<section class="panel"><h2>Исходный кадр последней детекции</h2><p id="detectcaption" class="small">Результат ещё не получен.</p><img id="detected" class="camera" alt="Исходный кадр последней детекции с рамками" hidden><p class="small">Этот снимок хранит точное соответствие кадра и рамок. Наложение на live-видео показывает последний ответ без трекинга между кадрами.</p></section>
-<section class="panel"><h2>Измерения задержки, мс</h2><table><thead><tr><th>Этап</th><th>p50</th><th>p95</th></tr></thead><tbody id="timings"></tbody></table><p class="small" id="notes"></p><p class="small">Браузер: decode + draw p50 / p95: <span id="browserlat">—</span>.<br>Пропущено при отображении: <span id="browserdrops">—</span>. Замер draw не включает физический вывод дисплея.</p></section>
-</div><section class="panel"><h2>Журнал нарушений</h2><div id="notification" class="notice" role="status" aria-live="polite">Новые подтверждённые события появятся здесь.</div><div class="small" id="count"></div>
-<div class="controls"><select id="fc" aria-label="Камера"><option value="">Все камеры</option></select><select id="fz" aria-label="Зона"><option value="">Все зоны</option></select><select id="ft" aria-label="Тип нарушения"><option value="">Все типы</option><option value="restricted_zone">Опасная зона</option><option value="no_helmet">Без каски</option></select><button id="refresh" type="button">Обновить журнал</button></div>
-<p class="small">Фильтр времени: ISO 8601 с часовым поясом.</p><div class="controls"><input id="start" aria-label="Начало периода" placeholder="2026-10-24T00:00:00+03:00"><input id="end" aria-label="Конец периода" placeholder="2026-10-25T00:00:00+03:00"></div>
-<div class="scroll"><table><thead><tr><th>Дата / время</th><th>Нарушение</th><th>Камера / зона</th><th>Кадр</th></tr></thead><tbody id="rows"></tbody></table></div></section></div>
-<noscript>Для просмотра dashboard включите JavaScript. Прямой MJPEG доступен по адресу /video.</noscript>
+<section class="panel" data-panel="warns" hidden>
+<div class="section-heading"><div><p class="eyebrow">ATTENTION REQUIRED</p><h2>Warns <span class="small">/ текущие предупреждения</span></h2></div><span id="warn-freshness" class="chip">Ожидание данных</span></div>
+<p class="small">Здесь только текущие подтверждённые нарушения. История и доказательные кадры доступны в Backlog.</p>
+<div id="warnings-list" class="warning-grid" aria-live="polite"></div>
+<h3>Состояние системы</h3><div id="system-warnings" class="system-list"></div>
+</section>
+<section class="panel" data-panel="backlog" hidden>
+<div class="section-heading"><div><p class="eyebrow">EVENT HISTORY</p><h2>Backlog <span class="small">/ журнал событий</span></h2></div><button id="refresh" type="button">Обновить</button></div>
+<div id="notification" class="notice" role="status" aria-live="polite">Подтверждённые события сохраняются вместе с исходным кадром.</div>
+<div class="controls"><select id="fc" aria-label="Камера"><option value="">Все камеры</option></select><select id="fz" aria-label="Зона"><option value="">Все зоны</option></select><select id="ft" aria-label="Тип нарушения"><option value="">Все типы</option><option value="restricted_zone">Опасная зона</option><option value="no_helmet">Без каски</option></select></div>
+<div class="controls"><input id="start" aria-label="Начало периода" placeholder="От: 2026-10-24T00:00:00+03:00"><input id="end" aria-label="Конец периода" placeholder="До: 2026-10-25T00:00:00+03:00"><select id="event-limit" aria-label="Количество событий"><option value="50">Последние 50</option><option value="100" selected>Последние 100</option><option value="500">Последние 500</option></select></div>
+<p id="count" class="small">Загрузка журнала…</p><div class="scroll"><table><thead><tr><th>Время</th><th>Нарушение</th><th>Камера / зона</th><th>Доказательный кадр</th></tr></thead><tbody id="rows"></tbody></table></div><p id="events-empty" class="empty" hidden>По выбранным фильтрам событий нет.</p>
+</section>
+<details class="panel diagnostics"><summary>Диагностика и исходный кадр детекции</summary>
+<div class="stats"><div class="metric"><b id="capturefps">—</b><span>FPS захвата</span></div><div class="metric"><b id="previewfps">—</b><span>FPS JPEG</span></div><div class="metric"><b id="inferencefps">—</b><span>Детекций / с</span></div><div class="metric"><b id="inflight">—</b><span>Запросов к TPU</span></div><div class="metric"><b id="age">—</b><span>Возраст детекции</span></div></div>
+<p class="small">Камера: <span id="health">—</span><br>Инференс: <span id="inferhealth">—</span><br>Журнал: <span id="eventhealth">—</span><br>Пропущено перед инференсом: <span id="drops">0</span></p>
+<h3>Исходный кадр последней детекции</h3><p id="detectcaption" class="small">Результат ещё не получен.</p><img id="detected" class="camera" alt="Исходный кадр последней детекции с рамками" hidden><p class="small">На снимке кадр и рамки совпадают точно. Live-наложение показывает последний ответ без трекинга между кадрами.</p>
+<h3>Задержки, мс</h3><table><thead><tr><th>Этап</th><th>p50</th><th>p95</th></tr></thead><tbody id="timings"></tbody></table><p class="small" id="notes"></p><p class="small">Браузер decode + draw p50 / p95: <span id="browserlat">—</span><br>Пропуски отображения: <span id="browserdrops">—</span></p>
+</details>
+</main><aside>
+<section class="panel overview"><p class="eyebrow">CONTROL ROOM</p><h2>Сводка</h2><div class="overview-row"><span>Подтверждённые нарушения</span><b id="summary-incidents">—</b></div><div class="overview-row"><span>Системные предупреждения</span><b id="summary-system">—</b></div><div class="overview-row"><span>Режим просмотра</span><b id="summary-view">CV</b></div><p id="sidebar-warnings" class="small">Ожидание свежих данных анализа.</p></section>
+<section class="panel path-panel"><p class="eyebrow">PROCESSING PATH</p><h2>Контур обработки</h2><ol class="pipeline-path"><li>Камера <span>Непрерывный поток</span></li><li>RabbitMQ → TPU <span>Выбранные кадры</span></li><li>Детекции и правила <span>Рамки · проверка зон</span></li><li>Warns → Backlog <span>Подтверждение · кадр · журнал</span></li></ol><p class="small">Видео продолжает работать независимо от анализа.</p></section>
+<section class="panel help"><h3>Быстрый доступ</h3><a href="/camera" target="_blank" rel="noopener">Отдельный просмотр камеры ↗</a><a href="/docs" target="_blank" rel="noopener">Документация API ↗</a></section>
+</aside></div>
+<footer class="app-footer"><span>SAFESIGHT · INDUSTRIAL VISION</span><span>Warns — сейчас · Backlog — история</span></footer>
+<noscript>Для мониторинга включите JavaScript. Прямой MJPEG доступен по адресу /video.</noscript>
 </body></html>

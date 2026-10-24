@@ -9,6 +9,7 @@ import queue
 import sys
 import threading
 import time
+from dataclasses import asdict
 
 import cv2
 
@@ -78,6 +79,7 @@ class CameraWorker:
         self.last_detection_at = None
         self.detection_jpeg = None
         self.last_event = None
+        self.warning_snapshot = None
         self.threads = []
 
     def update(self, **values):
@@ -151,9 +153,8 @@ class CameraWorker:
             started = time.perf_counter()
             try:
                 image = packet.image.copy()
-                # Live preview uses current video. Detection boxes belong to the
-                # separate, timestamped inference snapshot, never to a newer frame.
-                annotate(image, self.zones, [])
+                # Keep the shared video clean; the Web CV canvas draws zones
+                # and detections without opening another capture connection.
                 ok, jpg = cv2.imencode(".jpg", image, [cv2.IMWRITE_JPEG_QUALITY, 80])
                 if not ok:
                     raise ValueError("JPEG encoding failed")
@@ -263,6 +264,12 @@ class CameraWorker:
                     generation = packet.generation
                 height, width = packet.image.shape[:2]
                 tracked, events = engine.process(self.id, detections, self.zones, width, height)
+                with self.lock:
+                    self.warning_snapshot = {
+                        "captured_at": packet.captured_at, "timestamp": packet.captured_wall,
+                        "frame_id": packet.sequence, "source": self.mode,
+                        "items": [asdict(event) for event in engine.active_violations],
+                    }
                 annotated = packet.image.copy()
                 annotate(annotated, self.zones, tracked)
                 ok, jpg = cv2.imencode(".jpg", annotated, [cv2.IMWRITE_JPEG_QUALITY, 80])
@@ -296,7 +303,13 @@ class CameraWorker:
             result = dict(self.state)
             result.update(id=self.id, name=self.name,
                           last_detection_age_ms=round((now - self.last_detection_at) * 1000, 1) if self.last_detection_at else None,
-                          last_event=self.last_event, zones=[{"id": z.id, "name": z.name} for z in self.zones])
+                          last_event=self.last_event, zones=[{"id": z.id, "name": z.name, "points": z.points} for z in self.zones])
+            warning = self.warning_snapshot
+            fresh = warning is not None and now - warning["captured_at"] < 3
+            result.update(warnings_fresh=fresh,
+                          warnings_updated_at=warning["timestamp"] if warning else None,
+                          warnings_frame_id=warning["frame_id"] if warning else None,
+                          active_warnings=warning["items"] if fresh else [])
         _, preview = self.preview.get(timeout=0)
         preview_age = (now - preview[1]) * 1000 if preview else None
         result["preview_age_ms"] = round(preview_age, 1) if preview_age is not None else None

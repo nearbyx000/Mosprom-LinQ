@@ -29,6 +29,8 @@ class DetectionOverlay {
   constructor(canvas, video, state, updated, age) {
     Object.assign(this, {canvas, video, state, updated, age});
     this.generation = 0;
+    this.enabled = true;
+    this.zones = [];
     this.observer = typeof ResizeObserver === "function" ? new ResizeObserver(() => this.draw()) : null;
   }
 
@@ -116,6 +118,22 @@ class DetectionOverlay {
     const ctx = this.canvas.getContext("2d");
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     ctx.clearRect(0, 0, width, height);
+    if (!this.enabled) return;
+    ctx.strokeStyle = "#ffc56a";
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.lineWidth = 2;
+    ctx.font = "13px system-ui";
+    for (const zone of this.zones) {
+      if (!Array.isArray(zone.points) || zone.points.length < 3) continue;
+      const points = zone.points.map(([x, y]) => projectDetection(
+        [x * this.video.width, y * this.video.height, x * this.video.width, y * this.video.height],
+        this.video.width, this.video.height, width, height));
+      ctx.beginPath();
+      points.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+      ctx.closePath();
+      ctx.stroke();
+      ctx.fillText(zone.name || zone.id, points[0][0] + 5, Math.max(16, points[0][1] - 6));
+    }
     if (!this.packet) { this.age.textContent = "Нет актуальных рамок"; return; }
     const age = this.packet.result_age_ms + performance.now() - this.received;
     this.age.textContent = age >= 1500 ? "Рамки устарели" : `Возраст: ${Math.round(age)} мс`;

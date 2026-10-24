@@ -129,6 +129,7 @@ class RuleEngine:
         self.min_confidence = min_confidence
         self.tracker = IoUTracker()
         self.episodes: dict[tuple[str, str, str, int], _Episode] = {}
+        self.active_violations: list[Violation] = []
 
     def process(self, camera_id: str, detections: list[Detection], zones: list[Zone], image_w: int, image_h: int) -> tuple[list[Detection], list[Violation]]:
         tracked = self.tracker.update(detections)
@@ -162,4 +163,6 @@ class RuleEngine:
             if episode.hits >= self.confirm_frames and not episode.emitted:
                 episode.emitted = True
                 emitted.append(event)
+        self.active_violations = [event for key, event in candidates.items()
+                                  if self.episodes[key].emitted]
         return tracked, emitted
