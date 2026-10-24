@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import importlib
 import json
+import math
 import os
 import time
 import uuid
@@ -61,7 +62,8 @@ class Settings:
             raise ValueError("Set LINQ_LOGIN or LINQ_PROGRAM_URI=file:///auto/cache/<LOGIN>/yolov8n.tpu?raw=False")
         if not 1 <= self.max_inflight <= 2:
             raise ValueError("LINQ_MAX_INFLIGHT must be 1 or 2 for the shared broker")
-        if not 0 < self.max_request_fps <= 5 or self.timeout <= 0 or self.max_result_age <= 0:
+        if (not 1<=self.port<=65535 or not 0 < self.max_request_fps <= 5 or
+                not all(math.isfinite(v) and v>0 for v in (self.timeout,self.max_result_age))):
             raise ValueError("Request FPS must be in (0,5]; timeout and max result age must be positive")
 
 

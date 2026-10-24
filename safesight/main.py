@@ -4,21 +4,32 @@ from contextlib import asynccontextmanager
 import os
 from pathlib import Path
 import time
+from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Query, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel,Field
 
 from .pipeline import Pipeline
 from .detections import test_message
+from .exports import event_csv
+from .auth import OperatorAuth
+from . import __version__
 
 ROOT = Path(__file__).resolve().parent.parent
 
 
+class EventReview(BaseModel):
+    decision: Literal['confirmed','false_positive','needs_review']
+    note: str = Field(default='',max_length=1000)
+
+
 def create_app(config_path=None, data_dir=None, mode=None, camera_factory=None, client_factory=None):
     config_path = Path(config_path or os.getenv("SAFESIGHT_CONFIG", str(ROOT / "config/cameras.json")))
-    data_dir = Path(data_dir or os.getenv("SAFESIGHT_DATA", str(ROOT / "data"))).resolve()
     mode = mode or os.getenv("SAFESIGHT_MODE", "preview").strip().lower()
+    default_data = ROOT/'data'/'demo' if mode=='demo' else ROOT/'data'
+    data_dir = Path(data_dir or os.getenv("SAFESIGHT_DATA", str(default_data))).resolve()
 
     @asynccontextmanager
     async def lifespan(app):
@@ -35,7 +46,8 @@ def create_app(config_path=None, data_dir=None, mode=None, camera_factory=None, 
         finally:
             await asyncio.to_thread(pipeline.stop)
 
-    app = FastAPI(title="SafeSight / LinQ", version="0.2.0", lifespan=lifespan)
+    app = FastAPI(title="SafeSight / LinQ", version=__version__, lifespan=lifespan)
+    app.add_middleware(OperatorAuth)
     app.mount("/evidence", StaticFiles(directory=str(data_dir / "evidence"), check_dir=False), name="evidence")
     app.mount("/static", StaticFiles(directory=str(ROOT / "web")), name="static")
     app.mount("/dashboard", StaticFiles(directory=str(ROOT / "safesight/static")), name="dashboard")
@@ -69,6 +81,8 @@ def create_app(config_path=None, data_dir=None, mode=None, camera_factory=None, 
             state = worker.status()
             cameras.append({"camera_id": worker.id, "source": worker.mode,
                             "fresh": state["warnings_fresh"], "updated_at": state["warnings_updated_at"],
+                            "safetyvision_expected": state["safetyvision_expected"],
+                            "safetyvision_fresh": state["safetyvision_fresh"],
                             "frame_id": state["warnings_frame_id"], "warnings": state["active_warnings"]})
         return {"cameras": cameras, "active_count": sum(len(c["warnings"]) for c in cameras)}
 
@@ -80,6 +94,38 @@ def create_app(config_path=None, data_dir=None, mode=None, camera_factory=None, 
             return app.state.pipeline.store.list_events(camera_id, zone_id, violation_type, start, end, limit)
         except ValueError as exc:
             raise HTTPException(422, str(exc)) from exc
+
+    @app.get('/api/events/export.csv')
+    def export_events(camera_id: str | None = None, zone_id: str | None = None,
+                      violation_type: str | None = None, start: str | None = None,
+                      end: str | None = None, limit: int = Query(100,ge=1,le=500)):
+        try:
+            rows = app.state.pipeline.store.list_events(camera_id,zone_id,violation_type,start,end,limit)
+            return Response(event_csv(rows),media_type='text/csv; charset=utf-8',
+                            headers={'Content-Disposition':'attachment; filename="safesight-events.csv"',
+                                     'Cache-Control':'no-store'})
+        except ValueError as exc:
+            raise HTTPException(422,str(exc)) from exc
+
+    @app.get('/api/summary')
+    def summary():
+        result = app.state.pipeline.store.summary()
+        result.update(source_mode=app.state.pipeline.mode,
+                      outbox_pending=sum(w.recorder.pending+w.recorder.invalid for w in app.state.pipeline.workers.values()),
+                      outbox_invalid=sum(w.recorder.invalid for w in app.state.pipeline.workers.values()))
+        return result
+
+    @app.patch('/api/events/{event_id}/review')
+    def review_event(event_id: int,body: EventReview,request: Request):
+        try:
+            return app.state.pipeline.store.review(event_id,body.decision,body.note,
+                                                   request.scope.get('safesight_operator','local_operator'))
+        except LookupError as exc:
+            raise HTTPException(404,str(exc)) from exc
+
+    @app.get('/api/events/{event_id}/reviews')
+    def event_reviews(event_id: int):
+        return app.state.pipeline.store.reviews(event_id)
 
     @app.websocket("/ws/detections/{camera_id}")
     async def detection_stream(websocket: WebSocket, camera_id: str, test: bool = False):
@@ -121,14 +167,23 @@ def create_app(config_path=None, data_dir=None, mode=None, camera_factory=None, 
         return Response(packet[2], media_type="image/jpeg", headers={"Cache-Control": "no-store"})
 
     @app.get("/api/detection/{camera_id}")
-    def detection(camera_id: str):
+    def detection(camera_id: str, frame: int | None = Query(None, ge=0), generation: int | None = Query(None, ge=0)):
         worker = worker_for(camera_id)
         with worker.lock:
             jpg = worker.detection_jpeg
             sequence = worker.state["last_detection_frame"]
+            if frame is not None:
+                matches = [(key,image) for key,image in worker.detection_frames.items()
+                           if key[1]==frame and (generation is None or key[0]==generation)]
+                if not matches:
+                    raise HTTPException(404, 'Requested detection frame has expired; use the saved event evidence')
+                (gen,sequence),jpg = matches[-1]
+            else:
+                gen = next(reversed(worker.detection_frames), (0,0))[0]
         if jpg is None:
             raise HTTPException(503, "No detection result yet")
-        return Response(jpg, media_type="image/jpeg", headers={"Cache-Control": "no-store", "X-Frame-Sequence": str(sequence)})
+        return Response(jpg, media_type="image/jpeg", headers={"Cache-Control": "no-store",
+                        "X-Frame-Sequence": str(sequence), 'X-Frame-Generation':str(gen)})
 
     async def stream_response(request, worker):
         sequence, packet = await asyncio.to_thread(worker.preview.get, 0, 2)

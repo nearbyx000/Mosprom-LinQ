@@ -16,6 +16,7 @@ class Frame:
     captured_wall: float
     image: np.ndarray
     generation: int = 0
+    safetyvision_observed: bool = True
 
 
 class Latest:

@@ -57,7 +57,7 @@ class JPEGSettings:
             raise ValueError("LINQ_JPEG_QUALITY must be in [30,95]")
         if self.max_inflight != 1 or not 0 < self.max_request_fps <= 5:
             raise ValueError("JPEG gateway uses one in-flight request and at most 5 requests/s")
-        if self.timeout <= 0 or self.max_result_age <= 0:
+        if not 1<=self.port<=65535 or not all(math.isfinite(v) and v>0 for v in (self.timeout,self.max_result_age)):
             raise ValueError("Timeout and max result age must be positive")
 
 

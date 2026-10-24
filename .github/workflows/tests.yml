@@ -1,8 +1,8 @@
-name: Web tests
+name: SafeSight checks
 
 on:
   push:
-    branches: [WEB]
+    branches: [WEB, 'codex/**']
   pull_request:
   workflow_dispatch:
 
@@ -21,10 +21,25 @@ jobs:
         with:
           python-version: '3.12'
           cache: pip
-      - run: python -m pip install -r requirements-dev.txt
+      - run: python -m pip install -c constraints-tested.txt -r requirements-dev.txt
       - run: python -m pip check
+      - run: python -m scripts.check_repository
       - run: python -m pytest -q
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
       - run: node --test tests/detections.test.cjs tests/operations.test.cjs
+
+  demo-smoke:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: python -m pip install -c constraints-tested.txt -r requirements.txt
+      - run: python -m scripts.smoke_demo --output data/ci-demo-smoke

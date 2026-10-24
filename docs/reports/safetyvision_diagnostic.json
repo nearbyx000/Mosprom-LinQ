@@ -1,0 +1,50 @@
+{
+  "kind": "annotated-evidence-diagnostic-NOT-accuracy",
+  "model": {
+    "backend": "LOCAL ONNX CPU / NOT TPU",
+    "onnx_sha256": "a4d72ccc21a7552c0dbcb4610528372cbeb850c287cf580d9659df80ca8a6915"
+  },
+  "preprocessing_comparison": [
+    {
+      "id": "diagnostic-0",
+      "jpeg_sha256": "901266945f20c16ba583785111004579375b9e9fc0d37ab492af6ef8baec5eb2",
+      "tensor_mean_abs_difference": 0.0026374240405857563,
+      "tensor_max_abs_difference": 0.17647060751914978,
+      "raw_score_max_abs_difference": 0.05779236555099487
+    },
+    {
+      "id": "diagnostic-1",
+      "jpeg_sha256": "26a06ad838931c97113e7ad84415acebf3c3d04e1d0fefa4417e605f71b5e7ad",
+      "tensor_mean_abs_difference": 0.0025322074070572853,
+      "tensor_max_abs_difference": 0.15294116735458374,
+      "raw_score_max_abs_difference": 0.5579715967178345
+    },
+    {
+      "id": "diagnostic-2",
+      "jpeg_sha256": "33c688acbc2062e79acb0fa47c655dc64401dcc0f7082c09cf630e8af8afe97e",
+      "tensor_mean_abs_difference": 0.002609492978081107,
+      "tensor_max_abs_difference": 0.19607841968536377,
+      "raw_score_max_abs_difference": 0.007779061794281006
+    }
+  ],
+  "Pillow_detection_counts": {
+    "diagnostic-0": 1,
+    "diagnostic-1": 1,
+    "diagnostic-2": 0
+  },
+  "OpenCV_detection_counts": {
+    "diagnostic-0": 1,
+    "diagnostic-1": 2,
+    "diagnostic-2": 0
+  },
+  "ground_truth_available": false,
+  "real_precision_recall_F1": null,
+  "TPU_comparison": {
+    "status": "unavailable",
+    "TCP_connect": "succeeded",
+    "AMQP_connect": "IncompatibleProtocolError: StreamLostError: Transport indicated EOF",
+    "inference_tasks_published": 0,
+    "paired_results": 0,
+    "quantization_accuracy_delta": null
+  }
+}

@@ -1,0 +1,11 @@
+* text=auto eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.pdf binary
+*.pptx binary
+# Byte-frozen historical baselines; their original SHA256 is part of the audit.
+/tests/fixtures/baseline_logic.py -text whitespace=trailing-space,space-before-tab,cr-at-eol
+/tests/fixtures/baseline_sv_decoder.py -text whitespace=trailing-space,space-before-tab,cr-at-eol

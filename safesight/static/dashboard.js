@@ -58,10 +58,12 @@ function renderWarnings(cameras, offline = false) {
     const title = document.createElement("h3"); title.textContent = violationName(warning.violation_type);
     const detail = document.createElement("p"); detail.className = "small";
     const source = warning.camera.inference_status === "disabled" ? "Анализ выключен" : warning.camera.tpu_response_received ? "LinQ TPU" : "Локальный / DEMO · НЕ TPU";
-    const when = warning.camera.warnings_updated_at ? new Date(warning.camera.warnings_updated_at * 1000).toLocaleTimeString("ru-RU") : "—";
-    detail.textContent = `${warning.camera.name} · зона ${warning.zone_id} · трек #${warning.track_id}. Уверенность ${Math.round(warning.confidence * 100)}%. ${source}. Обновлено ${when}.`;
-    const link = document.createElement("a"); link.href = `/api/detection/${encodeURIComponent(warning.camera_id)}?frame=${warning.camera.warnings_frame_id}`;
-    link.target = "_blank"; link.rel = "noopener noreferrer"; link.textContent = "Открыть последний кадр ↗";
+    const observedAt = warning.observed_at || warning.camera.warnings_updated_at;
+    const when = observedAt ? new Date(observedAt * 1000).toLocaleTimeString("ru-RU") : "—";
+    const zoneName = warning.zone_id === 'any' ? 'Вся сцена' : warning.camera.zones?.find(z=>z.id===warning.zone_id)?.name || warning.zone_id;
+    detail.textContent = `${warning.camera.name} · ${zoneName} · трек #${warning.track_id}. Уверенность ${Math.round(warning.confidence * 100)}%. ${source}. Обновлено ${when}.`;
+    const link = document.createElement("a"); link.href = warning.evidence_file ? `/evidence/${encodeURIComponent(warning.evidence_file)}` : `/api/detection/${encodeURIComponent(warning.camera_id)}?frame=${warning.frame_id ?? warning.camera.warnings_frame_id}${warning.generation ? `&generation=${warning.generation}` : ""}`;
+    link.target = "_blank"; link.rel = "noopener noreferrer"; link.textContent = warning.evidence_file ? "Доказательный кадр события ↗" : "Кадр наблюдения ↗";
     card.append(level, title, detail, link); list.append(card);
   }
   if (!incidents.length) emptyMessage(list, fresh ? "Подтверждённых нарушений в текущих результатах нет." : "Нет свежих данных анализа. Проверьте состояние детектора ниже.");
@@ -85,11 +87,17 @@ async function loadStatus() {
     const status = await response.json();
     const camera = status.cameras[0];
     if (!camera) return;
-    $("mode").textContent = status.mode === "preview" ? "Просмотр камеры · инференс выключен" : status.mode === "linq" ? `LinQ TPU / RabbitMQ · ответ получен: ${camera.tpu_response_received ? "да" : "ещё нет"}` : `${status.backend} · НЕ LinQ TPU`;
-    $("mode").className = status.mode === "linq" && camera.tpu_response_received ? "ok" : "warn";
+    $("detection-source").options[0].textContent = status.mode === 'linq' ? 'Рабочий детектор / LinQ TPU' : status.mode === 'demo' ? 'Демо-детектор · НЕ TPU' : status.mode === 'local' ? 'Локальный детектор · НЕ TPU' : 'Анализ выключен';
+    const hardwareFresh = status.mode === 'linq' && camera.tpu_response_received && camera.warnings_fresh && camera.inference_status === 'running';
+    $("mode").textContent = status.mode === "preview" ? "Просмотр камеры · анализ выключен" : status.mode === "linq" ? `LinQ TPU · ${hardwareFresh ? "анализ активен" : "ожидание свежих результатов"}` : `${sourceName(status.mode)}`;
+    $("mode").className = hardwareFresh ? "ok" : "warn";
+    const banner = $("mode-banner");
+    banner.hidden = status.mode === 'linq';
+    banner.textContent = status.mode === 'demo' ? 'ДЕМОНСТРАЦИЯ ПРАВИЛ · Цветовые фигуры, без нейросети и TPU. События помечаются как DEMO.' : status.mode === 'local' ? 'ЛОКАЛЬНЫЙ ИНФЕРЕНС · Результаты получены на этом компьютере, LinQ TPU не используется.' : 'РЕЖИМ ПРОСМОТРА · Видео доступно. Нарушения сейчас не анализируются.';
     $("camname").textContent = camera.name;
     $("health").textContent = camera.status;
-    $("inferhealth").textContent = camera.inference_status;
+    const sv = camera.rabbitmq || {};
+    $("inferhealth").textContent = camera.inference_status + (sv.sv_enabled ? ` · SV TPU: объединено ${sv.sv_joined || 0}, пропущено ${sv.sv_missed || 0}` : sv.sv_error ? ` · SafetyVision недоступна: ${sv.sv_error}` : "");
     $("eventhealth").textContent = camera.event_status;
     renderWarnings(status.cameras);
     overlays.zones = camera.zones || [];
@@ -119,16 +127,16 @@ async function loadStatus() {
   finally { clearTimeout(timeout); statusBusy = false; }
 }
 
-async function loadEvents() {
-  if (eventsBusy) return;
+async function loadEvents(force = false) {
+  if (eventsBusy || (!force && document.activeElement?.closest('#rows'))) return;
   eventsBusy = true;
-  const params = new URLSearchParams();
-  params.set("limit", $("event-limit").value);
-  for (const [id, key] of [["fc", "camera_id"], ["fz", "zone_id"], ["ft", "violation_type"], ["start", "start"], ["end", "end"]]) {
-    const value = $(id).value.trim(); if (value) params.set(key, value);
-  }
+  const controller = new AbortController(), timeout = setTimeout(() => controller.abort(),5000);
   try {
-    const response = await fetch(`/api/events?${params}`, { cache: "no-store" });
+    const filters = {limit:$("event-limit").value};
+    for (const [id,key] of [["fc","camera_id"],["fz","zone_id"],["ft","violation_type"],["start","start"],["end","end"]]) filters[key] = $(id).value.trim();
+    const params = eventQuery(filters);
+    $("export-csv").href = `/api/events/export.csv?${params}`;
+    const response = await fetch(`/api/events?${params}`, { cache: "no-store",signal:controller.signal });
     const data = await response.json();
     if (!response.ok) throw new Error(typeof data.detail === "string" ? data.detail : `HTTP ${response.status}`);
     $("rows").replaceChildren(); $("count").textContent = `Показано событий: ${data.length}`;
@@ -139,14 +147,55 @@ async function loadEvents() {
     lastEventId = Math.max(lastEventId || 0, latest);
     for (const event of data) {
       const row = document.createElement("tr");
-      row.append(td(new Date(event.timestamp).toLocaleString("ru-RU")), td(violationName(event.violation_type)), td(`${event.camera_id} / ${event.zone_id}`));
+      const zone = event.zone_id === 'any' ? 'Вся сцена' : [...$("fz").options].find(option=>option.value===event.zone_id)?.text || event.zone_id;
+      row.append(td(new Date(event.timestamp).toLocaleString("ru-RU")), td(violationName(event.violation_type)), td(`${event.camera_id} / ${zone}`));
+      const source = document.createElement('small'); source.className = 'event-source'; source.textContent = sourceName(event.source); row.children[1].append(source);
       const cell = document.createElement("td"), link = document.createElement("a"), image = document.createElement("img");
       link.href = `/evidence/${encodeURIComponent(event.evidence_file)}`; link.target = "_blank"; link.rel = "noopener noreferrer";
       image.className = "thumb"; image.src = link.href; image.alt = "Подтверждающий кадр"; image.loading = "lazy";
       link.append(image); cell.append(link); row.append(cell); $("rows").append(row);
+      const reviewCell = document.createElement('td');
+      const decision = document.createElement('select'); decision.setAttribute('aria-label',`Решение по событию ${event.id}`);
+      for (const [value,label] of [['unreviewed','Не проверено'],['confirmed','Подтверждено'],['false_positive','Ложное срабатывание'],['needs_review','Нужна проверка']]) {
+        const option = new Option(label,value); option.disabled = value==='unreviewed'; decision.add(option);
+      }
+      decision.value = event.review_status || 'unreviewed';
+      const note = document.createElement('input'); note.placeholder = 'Комментарий'; note.maxLength = 1000;
+      note.setAttribute('aria-label',`Комментарий к событию ${event.id}`); note.value = event.review_note || '';
+      const save = document.createElement('button'); save.type = 'button'; save.textContent = 'Сохранить'; save.className = 'secondary';
+      save.disabled = true;
+      const changed = ()=> { save.disabled = decision.value==='unreviewed' || (decision.value===(event.review_status||'unreviewed') && note.value===(event.review_note||'')); };
+      decision.addEventListener('change',changed); note.addEventListener('input',changed);
+      save.addEventListener('click',async()=>{
+        save.disabled = true;
+        const control = new AbortController(), timer = setTimeout(()=>control.abort(),5000);
+        try {
+          const result = await fetch(`/api/events/${event.id}/review`,{method:'PATCH',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({decision:decision.value,note:note.value}),signal:control.signal});
+          if (!result.ok) throw new Error(`HTTP ${result.status}`);
+          $('notification').textContent = `Проверка события №${event.id} сохранена. Исходная детекция и JPEG не изменены.`;
+          await loadEvents(true);
+        } catch (error) { $('notification').textContent = `Не удалось сохранить проверку: ${error.message}`; changed(); }
+        finally { clearTimeout(timer); }
+      });
+      reviewCell.append(decision,note,save); row.append(reviewCell);
     }
   } catch (error) { $("count").textContent = `Ошибка журнала: ${error.message}`; }
-  finally { eventsBusy = false; }
+  finally { clearTimeout(timeout); eventsBusy = false; }
+}
+
+async function loadSummary() {
+  const controller = new AbortController(), timeout = setTimeout(()=>controller.abort(),5000);
+  try {
+    const response = await fetch('/api/summary',{cache:'no-store',signal:controller.signal});
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    $('summary-day').textContent = data.total;
+    $('summary-pending').textContent = data.outbox_pending;
+  } catch (_) {
+    $('summary-day').textContent = '—';
+    $('summary-pending').textContent = '—';
+  } finally { clearTimeout(timeout); }
 }
 
 $("reconnect").addEventListener("click", () => { if (cameraId) preview.start(`/api/stream/${encodeURIComponent(cameraId)}`); });
@@ -157,9 +206,10 @@ $("detection-source").addEventListener("change", () => { if (cameraId) overlays.
 window.addEventListener("pagehide", () => { preview.stop(); overlays.stop(); });
 setInterval(loadStatus, 2000);
 setInterval(loadEvents, 3000);
+setInterval(loadSummary,5000);
 setInterval(() => {
   const metrics = preview.metrics(); $("browserfps").textContent = metrics.fps;
   $("browserlat").textContent = `${metrics.decodeDrawP50 ?? "—"} / ${metrics.decodeDrawP95 ?? "—"} мс`;
   $("browserdrops").textContent = `${metrics.dropped} · очередь p95: ${metrics.queueP95 ?? "—"} мс`;
 }, 1000);
-loadStatus(); loadEvents();
+loadStatus(); loadEvents(); loadSummary();

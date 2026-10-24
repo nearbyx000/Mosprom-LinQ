@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import os
 from pathlib import Path
 import queue
@@ -15,10 +16,14 @@ import cv2
 
 from .inference import DemoBackend, UltralyticsBackend
 from .logic import Zone, RuleEngine
+from .safety import SafetyPolicy
 from .rabbitmq import LinQClient, Settings
 from .jpeg_gateway import JPEGGatewayClient, JPEGSettings
+from .dual_gateway import DualGatewayClient
 from .runtime import Frame, Latest, Metrics
 from .storage import EventStore
+from .evidence import EvidenceRecorder
+from .config import load_config
 from .video import SyntheticVideo, annotate
 from .detections import message as detection_message
 
@@ -64,15 +69,23 @@ class CameraWorker:
         self.id, self.name, self.source = camera["id"], camera["name"], camera["source"]
         self.zones = [Zone(z["id"], z["name"], tuple(tuple(p) for p in z["points"])) for z in camera.get("zones", [])]
         self.store, self.evidence_dir, self.mode = store, evidence_dir, mode
+        self.recorder = EvidenceRecorder(store, evidence_dir)
         self.fps = fps
         self.camera_factory = camera_factory
         if client_factory is not None:
             self.client_factory = client_factory
         elif os.getenv("LINQ_JPEG_ROUTE") and mode == "linq":
-            self.client_factory = lambda metrics: JPEGGatewayClient(JPEGSettings.from_env(), metrics)
+            if os.getenv("LINQ_SV_ROUTE"):
+                self.client_factory = lambda metrics: DualGatewayClient(JPEGSettings.from_env(), metrics)
+            else:
+                self.client_factory = lambda metrics: JPEGGatewayClient(JPEGSettings.from_env(), metrics)
         else:
             self.client_factory = lambda metrics: LinQClient(Settings.from_env(), metrics)
         self.backend = backend
+        self.safety_policy = SafetyPolicy.from_env()
+        self.max_result_age = float(os.getenv('LINQ_MAX_RESULT_AGE', '3'))
+        if not math.isfinite(self.max_result_age) or self.max_result_age <= 0:
+            raise ValueError('LINQ_MAX_RESULT_AGE must be finite and positive')
         self.raw, self.preview = Latest(), Latest()
         self.detection_updates = Latest()
         self.results = queue.Queue(maxsize=8)
@@ -83,9 +96,14 @@ class CameraWorker:
                       "event_status": "ready", "rabbitmq": {}, "last_detection_frame": None,
                       "last_detection_task": None, "tpu_response_received": False}
         self.last_detection_at = None
+        self.last_safety_at = None
+        self.safetyvision_expected = mode == 'linq' and bool(os.getenv('LINQ_SV_ROUTE'))
         self.detection_jpeg = None
+        self.detection_frames = {}
+        self.incident_evidence = {}
         self.last_event = None
         self.warning_snapshot = None
+        self.safety_warning_snapshot = None
         self.threads = []
 
     def update(self, **values):
@@ -113,7 +131,7 @@ class CameraWorker:
     def capture_loop(self):
         sequence = 0
         generation = 0
-        paced = self.source == "synthetic" or (isinstance(self.source, str) and self.source.lower().endswith((".mp4", ".avi", ".mkv")))
+        paced = self.source == "synthetic" or (isinstance(self.source, str) and self.source.lower().endswith((".mp4", ".avi", ".mkv", '.mov', '.webm', '.m4v')))
         while not self.stopped.is_set():
             capture = None
             try:
@@ -129,12 +147,12 @@ class CameraWorker:
                     if not ok or image is None:
                         raise RuntimeError("Camera disconnected")
                     self.metrics.observe("capture_read", (captured_at - started) * 1000)
-                    if os.getenv("CAMERA_MIRROR", "1") == "1":
+                    if self.source != 'synthetic' and os.getenv("CAMERA_MIRROR", "1") == "1":
                         image = cv2.flip(image, 1)
                     sequence += 1
                     self.raw.put(Frame(sequence, captured_at, time.time(), image, generation))
                     self.metrics.tick("capture")
-                    self.update(status="running")
+                    self.update(status="running", demo_scenario=getattr(capture,'scenario',None))
                     if paced:
                         next_capture_at = max(next_capture_at + 1 / self.fps, started)
                         wait_until(self.stopped, next_capture_at)
@@ -178,6 +196,10 @@ class CameraWorker:
 
     def enqueue_result(self, result):
         packet, detections, task_id = result
+        _, current = self.raw.get(timeout=0)
+        if current is not None and current.generation != packet.generation:
+            self.metrics.tick('event_results_stale')
+            return
         # Emit before rules, evidence encoding and SQLite: none of these block
         # the preview or the WebSocket detection path.
         self.detection_updates.put((packet.captured_at, detection_message(
@@ -225,7 +247,11 @@ class CameraWorker:
                     self.stopped.wait(0.005)
             else:
                 self.update(inference_status=self.backend.name)
+                next_inference = time.perf_counter()
                 while not self.stopped.is_set():
+                    if self.mode == 'demo':
+                        wait_until(self.stopped, next_inference)
+                        next_inference = time.perf_counter()+.5
                     new_sequence, packet = self.raw.get(sequence)
                     if packet is None:
                         continue
@@ -256,30 +282,67 @@ class CameraWorker:
                 except Exception:
                     pass
 
+    def publish_warning_snapshot(self, engine, packet):
+        with self.lock:
+            items = [{**asdict(event), **self.incident_evidence.get(
+                (packet.generation,event.zone_id,event.violation_type,event.track_id),{}),
+                'frame_id':packet.sequence, 'generation':packet.generation,
+                'observed_at':packet.captured_wall, 'source':self.mode}
+                for event in engine.active_violations]
+            snapshot = {'captured_at':packet.captured_at, 'timestamp':packet.captured_wall,
+                        'frame_id':packet.sequence, 'source':self.mode, 'items':items}
+            self.warning_snapshot = snapshot
+            if packet.safetyvision_observed:
+                self.last_safety_at = packet.captured_at
+                self.safety_warning_snapshot = snapshot
+
     def events_loop(self):
-        engine = RuleEngine()
+        policy = self.safety_policy
+        engine = RuleEngine(safety_policy=policy)
         last_drops = 0
         generation = None
+        last_key = (-1, -1)
+        max_age = self.max_result_age
         while not self.stopped.is_set():
+            recovered = self.recorder.recover()
+            for saved in recovered:
+                with self.lock:
+                    self.last_event = saved
+                self.metrics.tick('events_recovered')
+            pending = self.recorder.pending
+            invalid = self.recorder.invalid
+            self.update(event_outbox_pending=pending,event_outbox_invalid=invalid)
+            if invalid:
+                self.update(event_status=f'requires review ({invalid} invalid evidence records)')
+            elif pending:
+                self.update(event_status=f'pending recovery ({self.recorder.last_error or "storage"})')
+            elif recovered:
+                self.update(event_status='ready')
             try:
                 packet, detections, task_id = self.results.get(timeout=0.2)
             except queue.Empty:
                 continue
             started = time.perf_counter()
             try:
+                key = (packet.generation, packet.sequence)
+                if key <= last_key or started - packet.captured_at > max_age:
+                    self.metrics.tick('event_results_stale')
+                    continue
+                last_key = key
                 drops = self.metrics.snapshot()["counts"].get("event_results_dropped", 0)
                 if drops != last_drops or packet.generation != generation:
-                    engine = RuleEngine()  # Missing observations cannot confirm continuity.
+                    engine = RuleEngine(safety_policy=policy)  # Missing observations cannot confirm continuity.
+                    with self.lock:
+                        self.last_safety_at = None
+                        self.safety_warning_snapshot = None
+                        self.incident_evidence.clear()
                     last_drops = drops
                     generation = packet.generation
                 height, width = packet.image.shape[:2]
-                tracked, events = engine.process(self.id, detections, self.zones, width, height)
-                with self.lock:
-                    self.warning_snapshot = {
-                        "captured_at": packet.captured_at, "timestamp": packet.captured_wall,
-                        "frame_id": packet.sequence, "source": self.mode,
-                        "items": [asdict(event) for event in engine.active_violations],
-                    }
+                tracked, events = engine.process(self.id, detections, self.zones, width, height,
+                                                safetyvision_observed=packet.safetyvision_observed,
+                                                observed_at=packet.captured_at)
+                self.publish_warning_snapshot(engine, packet)  # Warns never wait for storage.
                 annotated = packet.image.copy()
                 annotate(annotated, self.zones, tracked)
                 ok, jpg = cv2.imencode(".jpg", annotated, [cv2.IMWRITE_JPEG_QUALITY, 80])
@@ -288,20 +351,42 @@ class CameraWorker:
                 jpeg = jpg.tobytes()
                 with self.lock:
                     self.detection_jpeg = jpeg
+                    self.detection_frames[key] = jpeg
+                    while len(self.detection_frames) > 12:
+                        del self.detection_frames[next(iter(self.detection_frames))]
                     self.last_detection_at = packet.captured_at
                     self.state.update(last_detection_frame=packet.sequence, last_detection_task=task_id)
                 for event in events:
-                    safe_camera = "".join(c for c in self.id if c.isalnum() or c in "_-")
-                    filename = f"{safe_camera}-{time.time_ns()}-{event.violation_type}.jpg"
-                    (self.evidence_dir / filename).write_bytes(jpeg)
-                    event_id = self.store.insert(event.camera_id, event.zone_id, event.violation_type,
-                                                 event.track_id, event.confidence, filename,
-                                                 captured_at=packet.captured_wall)
+                    try:
+                        saved = self.recorder.record(event, jpeg, packet, self.mode)
+                    except OSError:
+                        # No durable intent exists if the filesystem write
+                        # itself failed. Retry this incident on a later fresh
+                        # observation instead of permanently suppressing it.
+                        episode_key = (event.camera_id,event.zone_id,event.violation_type,event.track_id)
+                        if episode_key in engine.episodes:
+                            engine.episodes[episode_key].emitted = False
+                        self.metrics.tick('evidence_write_errors')
+                        raise
+                    incident_key = (packet.generation, event.zone_id, event.violation_type, event.track_id)
                     with self.lock:
-                        self.last_event = {"id": event_id, "camera_id": self.id, "type": event.violation_type}
-                    self.metrics.tick("events")
-                    self.metrics.observe("capture_to_event", (time.perf_counter() - packet.captured_at) * 1000)
-                self.update(event_status="ready")
+                        self.incident_evidence[incident_key] = {
+                            'evidence_file':saved['evidence_file'], 'evidence_frame_id':packet.sequence,
+                            'evidence_generation':packet.generation,
+                        }
+                        while len(self.incident_evidence) > 256:
+                            del self.incident_evidence[next(iter(self.incident_evidence))]
+                        if saved['persisted']:
+                            self.last_event = saved
+                    if saved['persisted']:
+                        self.metrics.tick("events")
+                        self.metrics.observe("capture_to_event", (time.perf_counter() - packet.captured_at) * 1000)
+                self.publish_warning_snapshot(engine, packet)
+                pending = self.recorder.pending
+                invalid = self.recorder.invalid
+                self.update(event_outbox_pending=pending,event_outbox_invalid=invalid,
+                            event_status=f'requires review ({invalid} invalid evidence records)' if invalid else
+                            f'pending recovery ({self.recorder.last_error or "storage"})' if pending else 'ready')
             except Exception as exc:
                 self.update(event_status=f"failed ({type(exc).__name__})")
                 self.metrics.tick("event_errors")
@@ -316,10 +401,19 @@ class CameraWorker:
                           last_event=self.last_event, zones=[{"id": z.id, "name": z.name, "points": z.points} for z in self.zones])
             warning = self.warning_snapshot
             fresh = warning is not None and now - warning["captured_at"] < 3
+            safety = self.safety_warning_snapshot
+            safety_fresh = safety is not None and now-safety['captured_at'] < self.safety_policy.max_observation_gap
+            active = [item for item in warning['items'] if item['violation_type']=='restricted_zone'] if fresh else []
+            if safety_fresh:
+                active += [item for item in safety['items'] if item['violation_type']!='restricted_zone']
             result.update(warnings_fresh=fresh,
                           warnings_updated_at=warning["timestamp"] if warning else None,
                           warnings_frame_id=warning["frame_id"] if warning else None,
-                          active_warnings=warning["items"] if fresh else [])
+                          active_warnings=active)
+            result.update(safetyvision_expected=self.safetyvision_expected,
+                          safetyvision_fresh=(self.last_safety_at is not None and
+                                              now-self.last_safety_at < self.safety_policy.max_observation_gap)
+                          if self.safetyvision_expected else None)
         _, preview = self.preview.get(timeout=0)
         preview_age = (now - preview[1]) * 1000 if preview else None
         result["preview_age_ms"] = round(preview_age, 1) if preview_age is not None else None
@@ -333,10 +427,10 @@ class Pipeline:
         if mode not in {"preview", "linq", "demo", "local"}:
             raise ValueError("SAFESIGHT_MODE must be preview, linq, demo, or local")
         self.mode = mode
+        cfg = load_config(config_path)
         self.evidence_dir = Path(data_dir) / "evidence"
         self.evidence_dir.mkdir(parents=True, exist_ok=True)
         self.store = EventStore(Path(data_dir) / "events.sqlite")
-        cfg = json.loads(Path(config_path).read_text(encoding="utf-8"))
         cameras = cfg["cameras"]
         # Keep a single shared-server inference budget for this MVP.
         if len(cameras) != 1:
@@ -351,6 +445,8 @@ class Pipeline:
             camera = dict(camera)
             if "CAMERA_SOURCE" in os.environ:
                 camera["source"] = os.environ["CAMERA_SOURCE"]
+            elif mode == 'demo':
+                camera['source'] = 'synthetic'
             self.workers[camera["id"]] = CameraWorker(camera, self.store, self.evidence_dir, mode, fps,
                                                      camera_factory, client_factory, backend)
 

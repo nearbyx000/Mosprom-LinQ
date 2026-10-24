@@ -1,0 +1,198 @@
+{
+  "kind": "synthetic-rule-regression-NOT-model-accuracy",
+  "predictions": {
+    "sustained_no_helmet": [
+      {
+        "camera_id": "evaluation",
+        "zone_id": "any",
+        "violation_type": "no_helmet",
+        "track_id": 1,
+        "confidence": 0.9,
+        "box": [
+          35,
+          10,
+          65,
+          40
+        ]
+      }
+    ],
+    "orphan_no_helmet": [],
+    "ambiguous_helmet": [],
+    "stronger_helmet": [],
+    "body_is_not_head": [],
+    "overlapping_people": [],
+    "transient_no_helmet": [],
+    "sustained_fall_without_coco": [
+      {
+        "camera_id": "evaluation",
+        "zone_id": "any",
+        "violation_type": "fall_detected",
+        "track_id": 1,
+        "confidence": 0.9,
+        "box": [
+          10,
+          100,
+          200,
+          200
+        ]
+      }
+    ],
+    "transient_fall": [],
+    "fall_long_gaps": [],
+    "fall_duplicate_timestamps": [],
+    "primary_only_is_unknown": [
+      {
+        "camera_id": "evaluation",
+        "zone_id": "any",
+        "violation_type": "no_helmet",
+        "track_id": 1,
+        "confidence": 0.9,
+        "box": [
+          35,
+          10,
+          65,
+          40
+        ]
+      }
+    ],
+    "head_jitter_same_person": [
+      {
+        "camera_id": "evaluation",
+        "zone_id": "any",
+        "violation_type": "no_helmet",
+        "track_id": 1,
+        "confidence": 0.9,
+        "box": [
+          70,
+          10,
+          84,
+          30
+        ]
+      }
+    ],
+    "helmet_on_other_worker": [
+      {
+        "camera_id": "evaluation",
+        "zone_id": "any",
+        "violation_type": "no_helmet",
+        "track_id": 1,
+        "confidence": 0.9,
+        "box": [
+          35,
+          10,
+          65,
+          40
+        ]
+      }
+    ],
+    "borderline_true_no_helmet": [
+      {
+        "camera_id": "evaluation",
+        "zone_id": "any",
+        "violation_type": "no_helmet",
+        "track_id": 1,
+        "confidence": 0.48,
+        "box": [
+          35,
+          10,
+          65,
+          40
+        ]
+      }
+    ],
+    "two_separate_falls": [
+      {
+        "camera_id": "evaluation",
+        "zone_id": "any",
+        "violation_type": "fall_detected",
+        "track_id": 1,
+        "confidence": 0.9,
+        "box": [
+          10,
+          100,
+          200,
+          200
+        ]
+      },
+      {
+        "camera_id": "evaluation",
+        "zone_id": "any",
+        "violation_type": "fall_detected",
+        "track_id": 1,
+        "confidence": 0.9,
+        "box": [
+          10,
+          100,
+          200,
+          200
+        ]
+      }
+    ]
+  },
+  "configuration": {
+    "confirm_frames": 3,
+    "clear_after": 5,
+    "safety_policy": {
+      "thresholds": {
+        "no_harness": 0.4,
+        "no_goggles": 0.4,
+        "goggles": 0.4,
+        "no_safety_vest": 0.4,
+        "no_mask": 0.4,
+        "safety_vest": 0.4,
+        "gloves": 0.4,
+        "mask": 0.4,
+        "no_helmet": 0.45,
+        "hardhat": 0.4,
+        "fall_detected": 0.45,
+        "no_gloves": 0.4
+      },
+      "conflict_margin": 0.1,
+      "max_observation_gap": 2.5,
+      "confirm_window": 4
+    }
+  },
+  "metrics": {
+    "total": {
+      "TP": 8,
+      "FP": 0,
+      "FN": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "F1": 1.0
+    },
+    "per_class": {
+      "fall_detected": {
+        "TP": 3,
+        "FP": 0,
+        "FN": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "F1": 1.0
+      },
+      "no_helmet": {
+        "TP": 5,
+        "FP": 0,
+        "FN": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "F1": 1.0
+      }
+    },
+    "cases": 16,
+    "positive_cases": 7,
+    "detected_positive_cases": 7,
+    "false_alarm_cases": 0,
+    "false_alarms": 0,
+    "duration_seconds": null,
+    "false_alarms_per_hour": null,
+    "matching_iou": 0.5
+  },
+  "cases_sha256": "fedb90841933dab3c7b96a6ff7b115b83ae618e87ce934fa84b76e3e275368ef",
+  "cases_hash_format": "canonical_json_v1",
+  "source_sha256": {
+    "safesight/logic.py": "da782d655f9ff094146a46a3d2ff9de258bc284c20f8eef4fb47a79cac4cff8f",
+    "safesight/safety.py": "aebd5738dc5e7e65dadf0217b9987deb60b5683697e0a5c81b14f8d9a6b08e57"
+  },
+  "source_hash_format": "utf8_lf_v1"
+}

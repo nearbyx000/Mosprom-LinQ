@@ -66,7 +66,7 @@ def test_real_result_contract_survives_event_queue_failure(client):
 def test_latest_result_not_history_and_empty_detections_clear_boxes(client):
     worker = client.app.state.pipeline.workers['cam-01']
     for sequence in range(1, 4):
-        frame = Frame(sequence, time.perf_counter(), time.time(), np.zeros((48, 64, 3), np.uint8))
+        frame = Frame(sequence, time.perf_counter(), time.time(), np.zeros((48, 64, 3), np.uint8), 1)
         worker.enqueue_result((frame, [], None))
     with client.websocket_connect('/ws/detections/cam-01') as ws:
         message = ws.receive_json()

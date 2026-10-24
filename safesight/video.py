@@ -8,6 +8,7 @@ class SyntheticVideo:
     """Factory-only demo. Distinctly not a real industrial image source."""
     def __init__(self):
         self.frame = 0
+        self.scenario = 'normal'
 
     def read(self):
         width, height = 960, 540
@@ -17,15 +18,21 @@ class SyntheticVideo:
             cv2.line(canvas, (x, 0), (x, height), (43, 52, 57), 1)
         for y in range(0, height, 80):
             cv2.line(canvas, (0, y), (width, y), (43, 52, 57), 1)
-        # Walk in and out of restricted zone, with magenta no-helmet label.
-        # Separate tracks/episodes should create separate alarms.
-        cycle = self.frame % 210
-        px = 70 + int(cycle * 4.1) if cycle < 170 else -200
-        py = 230
-        if 0 <= px <= width - 100:
-            cv2.rectangle(canvas, (px, py), (px + 80, py + 180), (0, 255, 0), -1)
-            cv2.rectangle(canvas, (px + 22, py - 24), (px + 62, py - 5), (255, 0, 255), -1)
-        cv2.putText(canvas, "SYNTHETIC DEMO ONLY - NO TPU", (20, 42), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (210, 210, 210), 2)
+        # Five six-second scenes at the generated source's 30 FPS. The head is
+        # inside the body bbox, matching the real person/PPE association rules.
+        phase = (self.frame//180)%5
+        progress = (self.frame%180)/179
+        self.scenario = ('normal','zone_entry','no_helmet','fall','clear')[phase]
+        if phase < 3:
+            px = 160 if phase==0 else int(350+progress*240) if phase==1 else 620
+            cv2.rectangle(canvas,(px,185),(px+90,465),(0,255,0),-1)
+            head = (255,0,255) if phase==2 else (0,200,255)
+            cv2.rectangle(canvas,(px+22,190),(px+68,225),head,-1)
+        elif phase==3:
+            cv2.rectangle(canvas,(565,390),(825,465),(255,120,0),-1)
+        cv2.putText(canvas, 'SYNTHETIC DEMO - NO TPU / NO NEURAL INFERENCE',
+                    (20,38),cv2.FONT_HERSHEY_SIMPLEX,.62,(210,210,210),1)
+        cv2.putText(canvas, 'SCENE: '+self.scenario.upper(),(20,75),cv2.FONT_HERSHEY_SIMPLEX,.65,(160,180,190),1)
         self.frame += 1
         return True, canvas
 

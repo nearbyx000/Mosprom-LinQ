@@ -8,6 +8,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Sequence
 
+from .safety import SafetyPolicy, safety_evidence
+
 
 @dataclass
 class Detection:
@@ -113,15 +115,17 @@ class _Episode:
     hits: int = 0
     misses: int = 0
     emitted: bool = False
+    observations: list[int] = field(default_factory=list)
 
 
 class RuleEngine:
-    """Triggers only after consecutive observed frames, then suppresses repeats.
+    """Confirms zone streaks and repeated SV observations, suppressing repeats.
 
     Event resets after `clear_after` consecutive frames without the same rule.
     Multiple people use different short-lived track IDs (no identity inference).
     """
-    def __init__(self, confirm_frames: int = 3, clear_after: int = 5, min_confidence: float = 0.45):
+    def __init__(self, confirm_frames: int = 3, clear_after: int = 5, min_confidence: float = 0.45,
+                 safety_policy: SafetyPolicy | None = None):
         if confirm_frames < 1 or clear_after < 1:
             raise ValueError("confirm_frames and clear_after must be positive")
         self.confirm_frames = confirm_frames
@@ -130,12 +134,37 @@ class RuleEngine:
         self.tracker = IoUTracker()
         self.episodes: dict[tuple[str, str, str, int], _Episode] = {}
         self.active_violations: list[Violation] = []
+        self.safety_policy = safety_policy or SafetyPolicy()
+        self.last_observed_at = None
+        self.last_safety_observed_at = None
 
-    def process(self, camera_id: str, detections: list[Detection], zones: list[Zone], image_w: int, image_h: int) -> tuple[list[Detection], list[Violation]]:
-        tracked = self.tracker.update(detections)
+    def process(self, camera_id: str, detections: list[Detection], zones: list[Zone], image_w: int, image_h: int,
+                *, safetyvision_observed: bool = True, observed_at: float | None = None) -> tuple[list[Detection], list[Violation]]:
+        if observed_at is not None:
+            if self.last_observed_at is not None:
+                if observed_at <= self.last_observed_at:
+                    return detections, []  # Replays cannot count as new evidence.
+                if observed_at - self.last_observed_at > self.safety_policy.max_observation_gap:
+                    self.episodes.clear()
+                    self.tracker = IoUTracker()
+            self.last_observed_at = observed_at
+            if (self.last_safety_observed_at is not None and
+                    observed_at - self.last_safety_observed_at > self.safety_policy.max_observation_gap):
+                self.episodes = {k: v for k, v in self.episodes.items() if k[2] == 'restricted_zone'}
+            if safetyvision_observed:
+                self.last_safety_observed_at = observed_at
+        # Person and fall continuity are tracked independently. PPE inherits the
+        # person's track rather than letting head jitter create a new incident.
+        anchors = [d for d in detections if d.label == 'person' or (
+            safetyvision_observed and d.label == 'fall_detected' and
+            d.confidence >= self.safety_policy.thresholds['fall_detected'])]
+        self.tracker.update(anchors)
+        people = [d for d in anchors if d.label == 'person' and d.confidence >= self.min_confidence]
+        evidence = safety_evidence(detections, people, self.safety_policy) if safetyvision_observed else []
+        tracked = [*people, *evidence]
         candidates: dict[tuple[str, str, str, int], Violation] = {}
         for det in tracked:
-            if det.confidence < self.min_confidence or det.track_id is None:
+            if det.track_id is None:
                 continue
             if det.label == "person":
                 # Person's foot point, not the center of the bbox.
@@ -150,15 +179,31 @@ class RuleEngine:
                 # A missing helmet detection cannot establish this violation.
                 event = Violation(camera_id, "any", "no_helmet", det.track_id, det.confidence, det.box)
                 candidates[(camera_id, "any", event.violation_type, det.track_id)] = event
+            elif det.label == "fall_detected":
+                # SV positively detected a possible fall; still require repeated observations.
+                event = Violation(camera_id, "any", "fall_detected", det.track_id, det.confidence, det.box)
+                candidates[(camera_id, "any", event.violation_type, det.track_id)] = event
         emitted = []
         for key, episode in list(self.episodes.items()):
             if key not in candidates:
+                if key[2] in {'no_helmet', 'fall_detected'} and not safetyvision_observed:
+                    # No SV reply is unknown, not a negative observation. Only
+                    # actual SV observations count; wall-time gaps expire above.
+                    continue
                 episode.misses += 1
+                if key[2] in {'no_helmet', 'fall_detected'}:
+                    episode.observations.append(0)
+                    episode.observations = episode.observations[-max(self.confirm_frames, self.safety_policy.confirm_window):]
                 if episode.misses >= self.clear_after:
                     del self.episodes[key]
         for key, event in candidates.items():
             episode = self.episodes.setdefault(key, _Episode())
-            episode.hits = episode.hits + 1 if episode.misses == 0 else 1
+            if key[2] in {'no_helmet', 'fall_detected'}:
+                episode.observations.append(1)
+                episode.observations = episode.observations[-max(self.confirm_frames, self.safety_policy.confirm_window):]
+                episode.hits = sum(episode.observations)
+            else:
+                episode.hits = episode.hits + 1 if episode.misses == 0 else 1
             episode.misses = 0
             if episode.hits >= self.confirm_frames and not episode.emitted:
                 episode.emitted = True

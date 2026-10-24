@@ -31,3 +31,18 @@ tpu_framework_*/
 
 # Local server logs
 *.log
+
+# Local model weights, vendor deliveries, and historical patch installers.
+*.onnx
+*.pt
+*.tpu
+*.zip
+v2/
+.safesight-*/
+SafeSight_SafetyVision_Stage1/
+SafeSight_SafetyVision_WEB_Integration/
+SafeSight_JPEG_WEB_Patch/
+/linq_rtt_probe.py
+/linq_rtt_probe_resized.py
+/linq_wsl_smoke.py
+/linq_wsl_smoke_resized.py

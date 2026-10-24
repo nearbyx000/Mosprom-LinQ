@@ -14,7 +14,7 @@ class InferenceBackend(Protocol):
 
 
 class DemoBackend:
-    """Only finds hand-drawn green/magenta rectangles in synthetic video.
+    """Only finds hand-drawn color rectangles in synthetic video.
 
     NOT neural inference. NOT LinQ TPU. Do not present this as a working CV model.
     """
@@ -25,6 +25,8 @@ class DemoBackend:
         for label, low, high in (
             ("person", (0, 230, 0), (30, 255, 30)),
             ("no_helmet", (220, 0, 220), (255, 50, 255)),
+            ('hardhat', (0,180,240), (30,220,255)),
+            ('fall_detected', (230,95,0), (255,145,25)),
         ):
             mask = cv2.inRange(bgr_frame, np.array(low, dtype=np.uint8), np.array(high, dtype=np.uint8))
             n, _, stats, _ = cv2.connectedComponentsWithStats(mask)

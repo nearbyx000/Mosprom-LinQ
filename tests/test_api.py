@@ -85,6 +85,21 @@ def test_events_and_validation(client):
     assert client.get("/api/events?limit=0").status_code == 422
 
 
+def test_filtered_csv_and_summary(client):
+    store = client.app.state.pipeline.store
+    store.insert('cam-01','z','no_helmet',4,.9,'one.jpg',source='demo',frame_id=7,generation=1)
+    store.insert('other','z','fall_detected',5,.9,'two.jpg',source='linq')
+    summary = client.get('/api/summary').json()
+    assert summary['total'] == 2 and summary['by_type']['fall_detected'] == 1
+    assert summary['source_mode'] == 'preview'
+    response = client.get('/api/events/export.csv?camera_id=cam-01')
+    assert response.status_code == 200
+    assert 'attachment' in response.headers['content-disposition']
+    assert response.content.startswith(b'\xef\xbb\xbf')
+    assert 'one.jpg' in response.text and 'two.jpg' not in response.text
+    assert client.get('/api/events/export.csv?start=invalid').status_code == 422
+
+
 def test_camera_failure_is_visible_without_breaking_api(tmp_path, app_config):
     fake = FakeCamera(opened=False)
     app = create_app(app_config, tmp_path / "data", "preview", camera_factory=lambda *_: fake)

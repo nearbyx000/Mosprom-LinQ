@@ -55,7 +55,8 @@ class RuleTests(unittest.TestCase):
             all_alerts.extend(new)
         self.assertEqual(all_alerts, [])
         for _ in range(3):
-            _, new = e.process("camera", [Detection("no_helmet", .95, (40, 5, 60, 20))], [self.zone], 100, 100)
+            _, new = e.process("camera", [Detection("person", .95, (30, 0, 70, 90)),
+                                         Detection("no_helmet", .95, (40, 5, 60, 20))], [], 100, 100)
             all_alerts.extend(new)
         self.assertEqual(len(all_alerts), 1)
 
