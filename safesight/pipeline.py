@@ -39,6 +39,9 @@ def open_camera(source, fps):
         source = int(source)
     if isinstance(source, int) and sys.platform == "darwin":
         capture = cv2.VideoCapture(source, cv2.CAP_AVFOUNDATION)
+    elif isinstance(source, int) and sys.platform == "win32":
+        # Preserve the team's verified Windows camera backend from WEB.
+        capture = cv2.VideoCapture(source, cv2.CAP_DSHOW)
     elif isinstance(source, str) and source.startswith(("http://", "https://", "rtsp://")):
         capture = cv2.VideoCapture(source, cv2.CAP_FFMPEG,
                                    [cv2.CAP_PROP_OPEN_TIMEOUT_MSEC, 3000, cv2.CAP_PROP_READ_TIMEOUT_MSEC, 3000])
