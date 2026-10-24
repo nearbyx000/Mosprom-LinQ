@@ -1,0 +1,29 @@
+# Local Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+
+# Local settings and credentials
+.env
+.env.*
+!.env.example
+
+# Editor / macOS
+.DS_Store
+.idea/
+.vscode/
+
+# Data and recordings (add intentionally as needed)
+data/
+recordings/
+runs/
+
+# Local inference assets and Linux-only vendor SDK (not used by the web MVP)
+models/
+tpu_framework_*/
+
+# Local server logs
+*.log
