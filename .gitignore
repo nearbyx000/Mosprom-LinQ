@@ -10,6 +10,10 @@ __pycache__/
 .env
 .env.*
 !.env.example
+*.ovpn
+*.key
+*.pem
+.ipynb_checkpoints/
 
 # Editor / macOS
 .DS_Store

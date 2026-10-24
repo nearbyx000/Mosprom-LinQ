@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SafeSight — мониторинг промышленной безопасности</title>
+<link rel="stylesheet" href="/dashboard/dashboard.css">
+<script src="/dashboard/stream.js" defer></script><script src="/dashboard/dashboard.js" defer></script>
+</head>
+<body>
+<header><div><h1>SafeSight <span class="small">/ LinQ</span></h1><p id="mode" class="warn">Загрузка статуса…</p></div><a href="/docs">API</a></header>
+<div class="layout"><div>
+<section class="panel"><h2>Прямой эфир <span id="camname" class="small"></span></h2>
+<canvas id="live" class="camera" width="640" height="480" aria-label="Видеопоток камеры"></canvas>
+<div class="controls"><span id="streamstate" role="status">Подключение…</span><button id="reconnect" type="button">Подключить заново</button></div>
+<div class="stats">
+<div class="metric"><b id="capturefps">—</b><span>FPS захвата</span></div><div class="metric"><b id="previewfps">—</b><span>FPS JPEG-preview</span></div><div class="metric"><b id="browserfps">—</b><span>FPS отображения в браузере</span></div>
+<div class="metric"><b id="inferencefps">—</b><span>Детекций / с</span></div><div class="metric"><b id="inflight">—</b><span>Запросов к TPU одновременно</span></div><div class="metric"><b id="age">—</b><span>Возраст последней детекции</span></div>
+</div>
+<p class="small">Камера: <span id="health">—</span><br>Инференс: <span id="inferhealth">—</span><br>Журнал: <span id="eventhealth">—</span></p>
+<p class="small">Пропущено кадров перед инференсом: <span id="drops">0</span>. Видео и детекции обновляются независимо.</p>
+</section>
+<section class="panel"><h2>Последняя детекция</h2><p id="detectcaption" class="small">Результат ещё не получен.</p><img id="detected" class="camera" alt="Исходный кадр последней детекции с рамками" hidden><p class="small">Рамки относятся к этому снимку. На текущий live-кадр старые координаты не переносятся.</p></section>
+<section class="panel"><h2>Измерения задержки, мс</h2><table><thead><tr><th>Этап</th><th>p50</th><th>p95</th></tr></thead><tbody id="timings"></tbody></table><p class="small" id="notes"></p><p class="small">Браузер: decode + draw p50 / p95: <span id="browserlat">—</span>.<br>Пропущено при отображении: <span id="browserdrops">—</span>. Замер draw не включает физический вывод дисплея.</p></section>
+</div><section class="panel"><h2>Журнал нарушений</h2><div id="notification" class="notice" role="status" aria-live="polite">Новые подтверждённые события появятся здесь.</div><div class="small" id="count"></div>
+<div class="controls"><select id="fc" aria-label="Камера"><option value="">Все камеры</option></select><select id="fz" aria-label="Зона"><option value="">Все зоны</option></select><select id="ft" aria-label="Тип нарушения"><option value="">Все типы</option><option value="restricted_zone">Опасная зона</option><option value="no_helmet">Без каски</option></select><button id="refresh" type="button">Обновить журнал</button></div>
+<p class="small">Фильтр времени: ISO 8601 с часовым поясом.</p><div class="controls"><input id="start" aria-label="Начало периода" placeholder="2026-10-24T00:00:00+03:00"><input id="end" aria-label="Конец периода" placeholder="2026-10-25T00:00:00+03:00"></div>
+<div class="scroll"><table><thead><tr><th>Дата / время</th><th>Нарушение</th><th>Камера / зона</th><th>Кадр</th></tr></thead><tbody id="rows"></tbody></table></div></section></div>
+<noscript>Для просмотра dashboard включите JavaScript. Прямой MJPEG доступен по адресу /video.</noscript>
+</body></html>
