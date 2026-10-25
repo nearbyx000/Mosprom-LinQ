@@ -70,4 +70,4 @@ track, распознавание лиц/личности не реализов�
 
 Состав поставки, выполненные проверки и нерешённые ограничения — в
 [отчёте готовности](READINESS.md). Презентация на 7 слайдов:
-[SafeSight](defense/SafeSight-defense.pptx).
+[SafeSight](defense/SafeSight-defense-v2.pptx).

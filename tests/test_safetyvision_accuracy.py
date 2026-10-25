@@ -9,7 +9,7 @@ import pytest
 from gateways.safetyvision.decoder import NORMALIZED, safetyvision_detections
 from gateways.safetyvision.preprocessing import jpeg_to_tensor
 from safesight.evaluation import evaluate
-from safesight.logic import Detection, RuleEngine
+from safesight.logic import Detection, RuleEngine, Zone
 from safesight.safety import SafetyPolicy
 from scripts.safetyvision_eval import cases_digest, load_engine, read, replay
 from scripts.safetyvision_bench import CALIBRATION_TAGS, calibration, compare, load_tensor, digest
@@ -115,6 +115,31 @@ def test_primary_traffic_cannot_bridge_long_safety_gap():
     for t in (1.4,2.1,2.8,3.5):
         engine.process('c',[],[],640,480, observed_at=t, safetyvision_observed=False)
     assert engine.process('c',fall(),[],640,480, observed_at=4.2)[1] == []
+
+
+def test_dropped_observations_break_unconfirmed_streak_but_keep_recorded_incident():
+    engine = RuleEngine()
+    zone = Zone('z','Zone',((0,0),(1,0),(1,1),(0,1)))
+    def observe(at):
+        return engine.process('c',[Detection('person',.9,(10,10,30,40))],
+                              [zone],100,100,observed_at=at)[1]
+    assert not observe(0) and not observe(.1)
+    engine.break_unconfirmed_continuity()
+    assert not observe(.2) and not observe(.3)
+    assert len(observe(.4)) == 1
+    track = engine.active_violations[0].track_id
+    engine.break_unconfirmed_continuity()
+    for at in (.5,.6,.7,.8):
+        assert not observe(at)
+        assert engine.active_violations[0].track_id == track
+
+
+def test_track_ids_not_reused_after_long_observation_gap():
+    engine = RuleEngine()
+    tracked,_ = engine.process('c',[Detection('person',.9,(10,10,30,40))],[],100,100,observed_at=0)
+    previous = tracked[0].track_id
+    tracked,_ = engine.process('c',[Detection('person',.9,(10,10,30,40))],[],100,100,observed_at=10)
+    assert tracked[0].track_id > previous
 
 
 def test_invalid_policy_rejected_and_threshold_override(monkeypatch):

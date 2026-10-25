@@ -138,6 +138,18 @@ class RuleEngine:
         self.last_observed_at = None
         self.last_safety_observed_at = None
 
+    def break_unconfirmed_continuity(self):
+        """Dropped observations cannot confirm a streak or erase a saved incident.
+
+        Keep emitted episode/track identity until actual clear observations or
+        the wall-time gap expires. Otherwise storage backpressure re-emits the
+        same person as a new incident every time the bounded queue overflows.
+        """
+        for episode in self.episodes.values():
+            if not episode.emitted:
+                episode.hits = episode.misses = 0
+                episode.observations.clear()
+
     def process(self, camera_id: str, detections: list[Detection], zones: list[Zone], image_w: int, image_h: int,
                 *, safetyvision_observed: bool = True, observed_at: float | None = None) -> tuple[list[Detection], list[Violation]]:
         if observed_at is not None:
@@ -146,7 +158,9 @@ class RuleEngine:
                     return detections, []  # Replays cannot count as new evidence.
                 if observed_at - self.last_observed_at > self.safety_policy.max_observation_gap:
                     self.episodes.clear()
-                    self.tracker = IoUTracker()
+                    # Track IDs are also evidence-link keys. Expire continuity
+                    # without reusing an earlier ID in this camera generation.
+                    self.tracker.tracks.clear()
             self.last_observed_at = observed_at
             if (self.last_safety_observed_at is not None and
                     observed_at - self.last_safety_observed_at > self.safety_policy.max_observation_gap):

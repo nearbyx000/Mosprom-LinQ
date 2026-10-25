@@ -6,7 +6,7 @@ import numpy as np
 
 from safesight.logic import Detection
 from safesight.pipeline import CameraWorker
-from safesight.runtime import Latest
+from safesight.runtime import Frame, Latest
 from safesight.storage import EventStore
 
 
@@ -91,3 +91,45 @@ def test_latest_slot_drops_history_and_wakes_on_close():
     slot.close()
     waiter.join(timeout=1)
     assert result == [(100, None)]
+
+
+def test_storage_backpressure_drops_observations_without_duplicate_incident(tmp_path):
+    evidence = tmp_path/'evidence'
+    evidence.mkdir()
+    store = EventStore(tmp_path/'events.sqlite')
+    worker = CameraWorker({'id':'c','name':'Test','source':0,
+                           'zones':[{'id':'z','name':'Zone','points':[[0,0],[1,0],[1,1],[0,1]]}]},
+                          store,evidence,mode='local')
+    worker.max_result_age = 30  # Scheduling budget, not an industrial freshness setting.
+    entered,release = threading.Event(),threading.Event()
+    original = worker.recorder.record
+    def slow_record(*args):
+        entered.set()
+        if not release.wait(10):
+            raise TimeoutError('Test did not release storage')
+        return original(*args)
+    worker.recorder.record = slow_record
+    thread = threading.Thread(target=worker.events_loop)
+    worker.threads.append(thread)
+    thread.start()
+    stamp = time.perf_counter()-1
+    def enqueue(seq):
+        worker.enqueue_result((Frame(seq,stamp+seq*.001,time.time(),np.zeros((40,40,3),np.uint8),1),
+                               [Detection('person',.9,(5,5,20,30))],None))
+    try:
+        for seq in range(1,4):
+            enqueue(seq)
+        assert entered.wait(5)
+        for seq in range(4,24):
+            enqueue(seq)
+        assert worker.metrics.snapshot()['counts']['event_results_dropped'] > 0
+        release.set()
+        deadline = time.monotonic()+5
+        while (worker.warning_snapshot is None or worker.warning_snapshot['frame_id']!=23) and time.monotonic()<deadline:
+            time.sleep(.01)
+        assert worker.warning_snapshot['frame_id'] == 23
+        assert len(store.list_events()) == 1
+        assert len(list(evidence.glob('*.jpg'))) == 1
+    finally:
+        release.set()
+        worker.stop()

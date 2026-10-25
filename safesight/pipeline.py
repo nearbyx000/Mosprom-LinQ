@@ -284,6 +284,10 @@ class CameraWorker:
 
     def publish_warning_snapshot(self, engine, packet):
         with self.lock:
+            live_episodes = {(packet.generation,zone,kind,track)
+                             for camera,zone,kind,track in engine.episodes}
+            self.incident_evidence = {key:value for key,value in self.incident_evidence.items()
+                                      if key in live_episodes}
             items = [{**asdict(event), **self.incident_evidence.get(
                 (packet.generation,event.zone_id,event.violation_type,event.track_id),{}),
                 'frame_id':packet.sequence, 'generation':packet.generation,
@@ -330,14 +334,19 @@ class CameraWorker:
                     continue
                 last_key = key
                 drops = self.metrics.snapshot()["counts"].get("event_results_dropped", 0)
-                if drops != last_drops or packet.generation != generation:
-                    engine = RuleEngine(safety_policy=policy)  # Missing observations cannot confirm continuity.
+                if packet.generation != generation:
+                    engine = RuleEngine(safety_policy=policy)
                     with self.lock:
                         self.last_safety_at = None
                         self.safety_warning_snapshot = None
                         self.incident_evidence.clear()
-                    last_drops = drops
                     generation = packet.generation
+                elif drops != last_drops:
+                    engine.break_unconfirmed_continuity()
+                    with self.lock:
+                        self.last_safety_at = None
+                        self.safety_warning_snapshot = None
+                last_drops = drops
                 height, width = packet.image.shape[:2]
                 tracked, events = engine.process(self.id, detections, self.zones, width, height,
                                                 safetyvision_observed=packet.safetyvision_observed,

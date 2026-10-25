@@ -155,3 +155,29 @@ def test_evidence_write_failure_keeps_warning_and_retries_fresh_observation(tmp_
         assert worker.store.list_events()[0]['frame_id'] == 4
     finally:
         worker.stop()
+
+
+def test_cleared_episode_cannot_reuse_previous_evidence_link(tmp_path):
+    evidence = tmp_path/'evidence'
+    evidence.mkdir()
+    zone = Zone('z','Zone',((0,0),(1,0),(1,1),(0,1)))
+    engine = RuleEngine()
+    worker = CameraWorker({'id':'c','name':'Test','source':0,'zones':[]},
+                          EventStore(tmp_path/'events.sqlite'),evidence,mode='demo')
+    stamp = time.perf_counter()
+    for seq in range(3):
+        engine.process('c',[Detection('person',.9,(5,5,20,30))],[zone],40,40,observed_at=stamp+seq*.01)
+    track = engine.active_violations[0].track_id
+    worker.incident_evidence[(1,'z','restricted_zone',track)] = {'evidence_file':'previous-episode.jpg'}
+    for seq in range(3,8):
+        engine.process('c',[],[zone],40,40,observed_at=stamp+seq*.01)
+        worker.publish_warning_snapshot(engine,Frame(seq,stamp+seq*.01,time.time(),np.zeros((40,40,3),np.uint8),1))
+    assert not worker.incident_evidence
+    for seq in range(8,11):
+        engine.process('c',[Detection('person',.9,(5,5,20,30))],[zone],40,40,observed_at=stamp+seq*.01)
+    # Tracker may legitimately retain a person across a short clear interval;
+    # that must not make the new episode inherit the old episode's JPEG.
+    assert engine.active_violations[0].track_id == track
+    worker.publish_warning_snapshot(engine,Frame(11,stamp+.11,time.time(),np.zeros((40,40,3),np.uint8),1))
+    assert len(worker.warning_snapshot['items']) == 1
+    assert 'evidence_file' not in worker.warning_snapshot['items'][0]

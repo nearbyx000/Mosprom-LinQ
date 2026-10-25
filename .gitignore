@@ -46,3 +46,6 @@ SafeSight_JPEG_WEB_Patch/
 /linq_rtt_probe_resized.py
 /linq_wsl_smoke.py
 /linq_wsl_smoke_resized.py
+
+# Superseded local slide draft, retained on disk; current deck is linked in README.
+/docs/defense/SafeSight-defense.pptx

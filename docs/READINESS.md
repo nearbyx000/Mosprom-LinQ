@@ -5,7 +5,7 @@
 [Draft PR #2 к WEB](https://github.com/nearbyx000/Mosprom-LinQ/pull/2).
 Согласованная заморозка исходников — **09:00 МСК**, финальный чек пользователя
 09:00–10:00. [Маршрут демонстрации](DEFENSE.md),
-[презентация](defense/SafeSight-defense.pptx), [инструкция запуска](RUNBOOK.md).
+[презентация](defense/SafeSight-defense-v2.pptx), [инструкция запуска](RUNBOOK.md).
 
 ## Что подготовлено
 
@@ -32,8 +32,8 @@
 
 | Проверка | Результат |
 |---|---|
-| Python / рабочее окружение | **108 passed**, 9.80 с |
-| Python / чистое dev-окружение | **108 passed**, 9.55 с; одно предупреждение Starlette о testclient/httpx |
+| Python / рабочее окружение | **112 passed**, 10.08 с |
+| Python / чистое dev-окружение | **112 passed**, 9.90 с; одно предупреждение Starlette о testclient/httpx |
 | JavaScript / Node | **9 passed** |
 | Минимум `requirements.txt`, без Pillow/Pika/ML/SDK | Preflight + настоящий HTTP smoke **pass** |
 | HTTP smoke, 35 с | Три типа событий, три JPEG/SHA256, MJPEG, CSV; outbox 0 / invalid 0 |
@@ -52,11 +52,24 @@
 Точный Windows/Python 3.12 snapshot — `constraints-tested.txt`.
 Проверенная чистая поставка: `data/defense-prep/release-ce63d94/`.
 [CI основного коммита](https://github.com/nearbyx000/Mosprom-LinQ/actions/runs/40144890375).
-После этого менялись только отчёт и workflow: устаревшие actions обновлены по
+В workflow устаревшие actions обновлены по
 официальным [checkout](https://github.com/actions/checkout),
 [setup-python](https://github.com/actions/setup-python) и
 [setup-node](https://github.com/actions/setup-node), закреплены по SHA тега v7.
 Актуальные проверки последнего коммита видны в PR; они не подменяют аппаратную оценку.
+
+### Дополнительная проверка переполнения очереди
+
+Повторный CI обнаружил редкий дубль события при медленной записи. Исправлено:
+пропуск результатов сбрасывает только неподтверждённую непрерывность, сохраняя
+уже зарегистрированный эпизод до реального выхода/истечения времени. Track ID
+не переиспользуется после временного разрыва; ссылка на JPEG удаляется из
+текущего соответствия после завершения эпизода, сам файл остаётся в Backlog.
+
+В детерминированном fault-injection прежняя версия `4fdd7ff` записывала **2 события
+на один непрерывный инцидент**, исправленная — **1**. Новые проверки также
+исключают наследование JPEG прошлого эпизода. Полный прогон после исправления:
+**112 passed** в обоих локальных окружениях. [Протокол](reports/storage_backpressure.json).
 
 ## Что измерено в компьютерном зрении
 

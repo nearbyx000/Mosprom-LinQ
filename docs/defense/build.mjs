@@ -67,9 +67,9 @@ table(s,[['Модель / класс','Кадры','TP / FP / FN','P','R','F1'],
 text(s,'По наличию класса на изображении: без каски 1 из 5; падение 4 из 5.\nНа пяти отрицательных кадрах каждого сценария FP = 0. Это не видеотревоги.',64,551,1150,100,25,colors.amber);
 text(s,'Малая диагностическая выборка. Новых аппаратных метрик нет: AMQP handshake не прошёл.',64,666,1150,40,20,colors.muted);
 
-s=slide('Проверка исправлений','Источник: docs/reports/safetyvision_after_rules.json, tests/fixtures/safetyvision_baseline_events.json; 16 синтетических сценариев, 8 истинных эпизодов в 7 положительных случаях. Python 108 passed в рабочем и чистом окружениях, JS 9 passed. Это регрессия логики, не neural accuracy.');
+s=slide('Проверка исправлений','Источник: docs/reports/safetyvision_after_rules.json, tests/fixtures/safetyvision_baseline_events.json; 16 синтетических сценариев, 8 истинных эпизодов в 7 положительных случаях. Python 112 passed в рабочем и чистом окружениях, JS 9 passed. Это регрессия логики, не neural accuracy. Дополнительно проверена запись одного события при переполнении очереди: docs/reports/storage_backpressure.json.');
 table(s,[['Синтетические правила','До','После'],['TP / FP / FN','6 / 7 / 2','8 / 0 / 0'],['Precision / Recall','0.462 / 0.750','1.000 / 1.000'],['F1','0.571','1.000']],[570,290,292],64,186,280,29);
-text(s,'108 Python-тестов + 9 JavaScript-тестов\nЗапуск без моделей и SDK; браузерная проверка пульта',64,510,1150,95,30,colors.green,true);
+text(s,'112 Python-тестов + 9 JavaScript-тестов\nЗапуск без моделей и SDK; браузерная проверка пульта',64,510,1150,95,30,colors.green,true);
 text(s,'На 20 реальных снимках агрегатные метрики исходной модели не улучшились.\nОтдельный helmet-кандидат отклонён: PPE F1 0.378 против 0.516 у SafetyVision.',64,631,1150,72,22,colors.amber);
 
 s=slide('План пилота на площадке','Источник: docs/BUSINESS_CASE.md, docs/MODEL_EXPERIMENTS.md, docs/SAFETYVISION_EVALUATION.md. Экономический эффект не измерен; нет обещаний ROI/SLA, HA/RBAC/SSO и сертификации. Нужны согласованная видеоразметка, права на веса/данные и независимая оценка.');
@@ -83,7 +83,7 @@ for (const [i,slide] of p.slides.items.entries()) {
   const png=await p.export({slide,format:'png',scale:1});
   await fs.writeFile(path.join(build,`slide-${i+1}.png`),new Uint8Array(await png.arrayBuffer()));
 }
-const output=path.join(here,process.env.DECK_NAME || 'SafeSight-defense.pptx');
+const output=path.join(here,process.env.DECK_NAME || 'SafeSight-defense-v2.pptx');
 const result=await finalizePresentation({workspaceDir:root,candidatePath:candidate,finalPath:output,
   pythonExecutable:process.env.RUNTIME_PYTHON,
   integrityValidatorPath:path.join(skill,'container_tools/inspect_presentation_package_integrity.py'),
