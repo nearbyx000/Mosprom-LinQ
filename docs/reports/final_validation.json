@@ -1,0 +1,38 @@
+{
+  "date_moscow": "2026-10-25",
+  "code_revision": "0daf7865464430bd0e80b9e15100d9f8808fd18d",
+  "branch": "codex/safetyvision-accuracy",
+  "base_branch": "WEB",
+  "pull_request": "https://github.com/nearbyx000/Mosprom-LinQ/pull/2",
+  "python_tests": {"passed": 112, "failed": 0},
+  "javascript_tests": {"passed": 9, "failed": 0},
+  "clean_git_archive_tested": true,
+  "base_requirements_http_smoke": {
+    "duration_seconds": 35,
+    "events": 3,
+    "event_types": ["fall_detected", "no_helmet", "restricted_zone"],
+    "evidence_checksums_verified": 3,
+    "outbox_pending": 0,
+    "outbox_invalid": 0,
+    "mode": "SYNTHETIC DEMO / NOT NEURAL / NOT TPU"
+  },
+  "ci": {
+    "pull_request_run": "https://github.com/nearbyx000/Mosprom-LinQ/actions/runs/40145598243",
+    "push_run": "https://github.com/nearbyx000/Mosprom-LinQ/actions/runs/40145595756",
+    "checks_per_run": {
+      "test (ubuntu-latest)": "success",
+      "test (windows-latest)": "success",
+      "test (macos-latest)": "success",
+      "demo-smoke (ubuntu-latest)": "success",
+      "demo-smoke (windows-latest)": "success",
+      "demo-smoke (macos-latest)": "success"
+    }
+  },
+  "tpu": {"new_inference_tasks_published": 0, "paired_raw_outputs_available": false},
+  "notes": [
+    "Automated checks and the synthetic demo are not neural model accuracy.",
+    "Starlette testclient emits a deprecation warning with httpx; tests pass.",
+    "Linux/macOS CI includes a hosted-runner capacity/cache notice; no deprecated Node action remains.",
+    "Subsequent documentation-only commits do not change the verified inference/persistence source."
+  ]
+}

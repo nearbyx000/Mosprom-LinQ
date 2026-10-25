@@ -1,7 +1,8 @@
 # Передача SafeSight 0.3 к проверке
 
 Дата: 25 октября 2026. Ветка: `codex/safetyvision-accuracy`, база `WEB` / `c5a338e`.
-Основной код зафиксирован коммитом `ce63d94131962ae69f175a611c8cbd638e838b7f`.
+Код патча, включая исправление переполнения очереди:
+`0daf7865464430bd0e80b9e15100d9f8808fd18d` (начальная сборка — `ce63d94`).
 [Draft PR #2 к WEB](https://github.com/nearbyx000/Mosprom-LinQ/pull/2).
 Согласованная заморозка исходников — **09:00 МСК**, финальный чек пользователя
 09:00–10:00. [Маршрут демонстрации](DEFENSE.md),
@@ -42,16 +43,18 @@
 | Gateway handler contracts / CLI help | Pass без проприетарного SDK для help и fake-контрактов |
 | Проверка индексируемой поставки | Локальные ссылки целы; веса/SDK/данные и очевидные ключи не индексируются |
 | Браузер, отдельная demo-БД | Stream CV, Warns, Backlog, immutable evidence и сохранение review проверены |
-| Чистый Git-архив `ce63d94`, без models/SDK | **108 Python + 9 JS passed**, 35-секундный base-only HTTP smoke pass |
-| GitHub CI основного коммита | **6 из 6 success**: unit/JS и base-only smoke на Windows, Linux, macOS; push и PR |
+| Чистый Git-архив `0daf786`, без models/SDK | **112 Python + 9 JS passed**, 35-секундный base-only HTTP smoke pass |
+| GitHub CI `0daf786` | **6 из 6 success**: unit/JS и base-only smoke на Windows, Linux, macOS; push и PR |
 | Рендер презентации | 7 слайдов осмотрены; editable tables, пакет/геометрия/шрифты проверены; PowerPoint отдельно не запускался |
 
 Локальные журналы: `data/defense-prep/base-only-smoke/report.json`,
-`preflight-base-release.json`, `deck-build/validation.json`. Чистые окружения
+`preflight-base-release.json`, `deck-build-v2/validation.json`. Чистые окружения
 созданы в `data/defense-prep/`; рабочая `.venv` не переустанавливалась.
 Точный Windows/Python 3.12 snapshot — `constraints-tested.txt`.
-Проверенная чистая поставка: `data/defense-prep/release-ce63d94/`.
-[CI основного коммита](https://github.com/nearbyx000/Mosprom-LinQ/actions/runs/40144890375).
+Проверенная чистая поставка: `data/defense-prep/release-0daf786/`;
+её smoke: `data/final-release-smoke/report.json` внутри этой поставки.
+[CI исправленного кода](https://github.com/nearbyx000/Mosprom-LinQ/actions/runs/40145598243),
+[краткий машиночитаемый итог](reports/final_validation.json).
 В workflow устаревшие actions обновлены по
 официальным [checkout](https://github.com/actions/checkout),
 [setup-python](https://github.com/actions/setup-python) и
