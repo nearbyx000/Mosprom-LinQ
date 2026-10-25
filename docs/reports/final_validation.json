@@ -32,7 +32,7 @@
   "notes": [
     "Automated checks and the synthetic demo are not neural model accuracy.",
     "Starlette testclient emits a deprecation warning with httpx; tests pass.",
-    "Linux/macOS CI includes a hosted-runner capacity/cache notice; no deprecated Node action remains.",
+    "CI has informational notices about Ubuntu runner migration and macOS capacity; no deprecated Node action remains.",
     "Subsequent documentation-only commits do not change the verified inference/persistence source."
   ]
 }
