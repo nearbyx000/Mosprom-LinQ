@@ -1,6 +1,8 @@
 # Передача SafeSight 0.3 к проверке
 
 Дата: 25 октября 2026. Ветка: `codex/safetyvision-accuracy`, база `WEB` / `c5a338e`.
+Основной код зафиксирован коммитом `ce63d94131962ae69f175a611c8cbd638e838b7f`.
+[Draft PR #2 к WEB](https://github.com/nearbyx000/Mosprom-LinQ/pull/2).
 Согласованная заморозка исходников — **09:00 МСК**, финальный чек пользователя
 09:00–10:00. [Маршрут демонстрации](DEFENSE.md),
 [презентация](defense/SafeSight-defense.pptx), [инструкция запуска](RUNBOOK.md).
@@ -40,13 +42,21 @@
 | Gateway handler contracts / CLI help | Pass без проприетарного SDK для help и fake-контрактов |
 | Проверка индексируемой поставки | Локальные ссылки целы; веса/SDK/данные и очевидные ключи не индексируются |
 | Браузер, отдельная demo-БД | Stream CV, Warns, Backlog, immutable evidence и сохранение review проверены |
+| Чистый Git-архив `ce63d94`, без models/SDK | **108 Python + 9 JS passed**, 35-секундный base-only HTTP smoke pass |
+| GitHub CI основного коммита | **6 из 6 success**: unit/JS и base-only smoke на Windows, Linux, macOS; push и PR |
 | Рендер презентации | 7 слайдов осмотрены; editable tables, пакет/геометрия/шрифты проверены; PowerPoint отдельно не запускался |
 
 Локальные журналы: `data/defense-prep/base-only-smoke/report.json`,
 `preflight-base-release.json`, `deck-build/validation.json`. Чистые окружения
 созданы в `data/defense-prep/`; рабочая `.venv` не переустанавливалась.
 Точный Windows/Python 3.12 snapshot — `constraints-tested.txt`.
-Удалённый CI и финальная проверка Git checkout фиксируются после публикации ветки.
+Проверенная чистая поставка: `data/defense-prep/release-ce63d94/`.
+[CI основного коммита](https://github.com/nearbyx000/Mosprom-LinQ/actions/runs/40144890375).
+После этого менялись только отчёт и workflow: устаревшие actions обновлены по
+официальным [checkout](https://github.com/actions/checkout),
+[setup-python](https://github.com/actions/setup-python) и
+[setup-node](https://github.com/actions/setup-node), закреплены по SHA тега v7.
+Актуальные проверки последнего коммита видны в PR; они не подменяют аппаратную оценку.
 
 ## Что измерено в компьютерном зрении
 
