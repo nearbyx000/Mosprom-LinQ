@@ -3,10 +3,10 @@
 Дата: 25 октября 2026. Ветка: `codex/safetyvision-accuracy`, база `WEB` / `c5a338e`.
 Код контура инференса, правил и сохранения, включая исправление переполнения:
 `0daf7865464430bd0e80b9e15100d9f8808fd18d` (начальная сборка — `ce63d94`).
-[Draft PR #2 к WEB](https://github.com/nearbyx000/Mosprom-LinQ/pull/2).
+[PR #2 продвижения пилота в main](https://github.com/nearbyx000/Mosprom-LinQ/pull/2).
 Согласованная заморозка исходников — **09:00 МСК**, финальный чек пользователя
 09:00–10:00. [Маршрут демонстрации](DEFENSE.md),
-[презентация](defense/SafeSight-defense-v2.pptx), [инструкция запуска](RUNBOOK.md).
+[презентация](defense/SafeSight-defense-3min.pptx), [инструкция запуска](RUNBOOK.md).
 
 ## Что подготовлено
 

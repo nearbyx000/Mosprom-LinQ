@@ -2,7 +2,7 @@ name: SafeSight checks
 
 on:
   push:
-    branches: [WEB, 'codex/**']
+    branches: [main, WEB, 'codex/**']
   pull_request:
   workflow_dispatch:
 

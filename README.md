@@ -130,4 +130,5 @@ data/, models/  Локальные данные/модели, исключены
 - [Аудит SafetyVision](docs/SAFETYVISION_AUDIT.md)
 - [Оценка ONNX/TPU и калибровка](docs/SAFETYVISION_EVALUATION.md)
 - [Проверка альтернативной PPE-модели и ROI](docs/MODEL_EXPERIMENTS.md)
-- [Презентация к защите](docs/defense/SafeSight-defense-v2.pptx)
+- [Презентация на 3 минуты по предоставленному образцу](docs/defense/SafeSight-defense-3min.pptx)
+- [Текст выступления и живой показ](docs/defense/PITCH_3MIN.md)

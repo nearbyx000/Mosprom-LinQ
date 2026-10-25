@@ -17,6 +17,7 @@ __pycache__/
 
 # Editor / macOS
 .DS_Store
+~$*.pptx
 .idea/
 .vscode/
 
