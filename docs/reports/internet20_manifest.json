@@ -1,0 +1,909 @@
+{
+  "kind": "public-internet-mini-diagnostic-NOT-independent-heldout",
+  "selection_seed": "safesight-internet20-v1",
+  "sources": {
+    "ppe": {
+      "url": "https://github.com/ultralytics/assets/releases/download/v0.0.0/construction-ppe.zip",
+      "page": "https://docs.ultralytics.com/datasets/detect/construction-ppe",
+      "split": "test"
+    },
+    "fall": {
+      "url": "https://www.kaggle.com/api/v1/datasets/download/uttejkumarkandagatla/fall-detection-dataset",
+      "page": "https://www.kaggle.com/datasets/uttejkumarkandagatla/fall-detection-dataset",
+      "split": "val"
+    }
+  },
+  "archive_sha256": {
+    "ppe": "bef8dcb599aa4e9d9f5e602cb6fa7143d3c84d7f6a0ff40463d7f2a4c2632ccc",
+    "fall": "06c0b8544abeae561b70da2f4f23d448aaa4391ee76ccfeeb29bcbb97f99717a"
+  },
+  "images": [
+    {
+      "id": "ppe-image1178",
+      "path": "images/ppe-image1178.jpg",
+      "source": "ppe",
+      "source_image": "images/test/image1178.jpg",
+      "source_label": "labels/test/image1178.txt",
+      "original_sha256": "3bc28965fa683bc4690d79b31d3622da7cf658096b40df6a8565ab55aca7a077",
+      "jpeg_sha256": "3bc28965fa683bc4690d79b31d3622da7cf658096b40df6a8565ab55aca7a077",
+      "label_sha256": "ba14ccb6494ca9cd69e98fbf38e93dda70f6c70ef1c43c6468809547dfea0e48",
+      "width": 681,
+      "height": 1024,
+      "truth": {
+        "person": [
+          {
+            "label": "person",
+            "box": [
+              218.3772915,
+              72.49561600000004,
+              479.0089305,
+              1023.168
+            ]
+          }
+        ],
+        "ppe": [
+          {
+            "label": "no_helmet",
+            "box": [
+              322.62375000000003,
+              118.000128,
+              396.6184860000001,
+              246.95961599999998
+            ]
+          }
+        ],
+        "fall": []
+      }
+    },
+    {
+      "id": "ppe-image1264",
+      "path": "images/ppe-image1264.jpg",
+      "source": "ppe",
+      "source_image": "images/test/image1264.jpg",
+      "source_label": "labels/test/image1264.txt",
+      "original_sha256": "0032ffc707c407bda80b804124b1f4e782320da56e4c8e2e81b1c477abf9f244",
+      "jpeg_sha256": "0032ffc707c407bda80b804124b1f4e782320da56e4c8e2e81b1c477abf9f244",
+      "label_sha256": "8f1dd8cb320fa6b4e910c9fe7e7fb698b9393bcf4700d212f785379a66e6ebe6",
+      "width": 1024,
+      "height": 962,
+      "truth": {
+        "person": [
+          {
+            "label": "person",
+            "box": [
+              762.351616,
+              143.56310799999997,
+              950.960128,
+              593.538608
+            ]
+          },
+          {
+            "label": "person",
+            "box": [
+              653.7441279999999,
+              150.02726699999997,
+              899.760128,
+              693.496661
+            ]
+          },
+          {
+            "label": "person",
+            "box": [
+              465.567744,
+              128.99794699999998,
+              809.1197440000001,
+              762.204625
+            ]
+          },
+          {
+            "label": "person",
+            "box": [
+              248.351744,
+              124.83441099999997,
+              583.04,
+              785.111769
+            ]
+          },
+          {
+            "label": "person",
+            "box": [
+              61.95148800000001,
+              95.88446400000004,
+              438.75174400000003,
+              899.6354640000001
+            ]
+          }
+        ],
+        "ppe": [
+          {
+            "label": "no_helmet",
+            "box": [
+              310.416384,
+              104.00085800000001,
+              432.09625600000004,
+              220.824214
+            ]
+          },
+          {
+            "label": "no_helmet",
+            "box": [
+              817.984512,
+              172.72421400000002,
+              904.416256,
+              249.75925
+            ]
+          },
+          {
+            "label": "no_helmet",
+            "box": [
+              656.1766399999999,
+              139.399572,
+              744.608256,
+              254.133464
+            ]
+          },
+          {
+            "label": "no_helmet",
+            "box": [
+              135.312384,
+              118.792089,
+              261.424128,
+              206.032983
+            ]
+          }
+        ],
+        "fall": []
+      }
+    },
+    {
+      "id": "ppe-image1231",
+      "path": "images/ppe-image1231.jpg",
+      "source": "ppe",
+      "source_image": "images/test/image1231.jpg",
+      "source_label": "labels/test/image1231.txt",
+      "original_sha256": "df1126344001803e77ccceacfd6fa13ce06454b01803e71aa63a10790fda0bbc",
+      "jpeg_sha256": "df1126344001803e77ccceacfd6fa13ce06454b01803e71aa63a10790fda0bbc",
+      "label_sha256": "263c7bf9bb9ce6cc819e460393212d1d0da32a51789242bab78597c2cd61b05f",
+      "width": 1024,
+      "height": 749,
+      "truth": {
+        "person": [
+          {
+            "label": "person",
+            "box": [
+              569.52064,
+              86.0065465,
+              1017.456128,
+              580.3113435
+            ]
+          },
+          {
+            "label": "person",
+            "box": [
+              0,
+              155.55793749999998,
+              494.159872,
+              724.7627345
+            ]
+          }
+        ],
+        "ppe": [
+          {
+            "label": "no_helmet",
+            "box": [
+              695.85664,
+              118.271594,
+              921.9363840000001,
+              262.71175
+            ]
+          },
+          {
+            "label": "no_helmet",
+            "box": [
+              61.95251200000001,
+              149.07459350000002,
+              367.824384,
+              343.77939050000003
+            ]
+          }
+        ],
+        "fall": []
+      }
+    },
+    {
+      "id": "ppe-image1270",
+      "path": "images/ppe-image1270.jpg",
+      "source": "ppe",
+      "source_image": "images/test/image1270.jpg",
+      "source_label": "labels/test/image1270.txt",
+      "original_sha256": "aa31be89e67425278e467066c0098a5e116d06efdb5cd02aec87103172fdbf58",
+      "jpeg_sha256": "aa31be89e67425278e467066c0098a5e116d06efdb5cd02aec87103172fdbf58",
+      "label_sha256": "2592bb227cb44272e633f8a3473263e9702030930dca411e29d9e69199663a3e",
+      "width": 1024,
+      "height": 1024,
+      "truth": {
+        "person": [
+          {
+            "label": "person",
+            "box": [
+              337.215488,
+              0.7521280000000274,
+              767.903744,
+              1009.264128
+            ]
+          },
+          {
+            "label": "person",
+            "box": [
+              328.23961599999996,
+              788.528128,
+              541.791744,
+              1021.824
+            ]
+          },
+          {
+            "label": "person",
+            "box": [
+              249.280512,
+              226.84774399999998,
+              364.128256,
+              542.6882559999999
+            ]
+          }
+        ],
+        "ppe": [
+          {
+            "label": "no_helmet",
+            "box": [
+              473.42387199999996,
+              2.3521279999999933,
+              647.6636159999999,
+              112.0
+            ]
+          },
+          {
+            "label": "no_helmet",
+            "box": [
+              352.319488,
+              764.208128,
+              526.575616,
+              873.856
+            ]
+          },
+          {
+            "label": "no_helmet",
+            "box": [
+              264.415744,
+              211.423744,
+              354.303488,
+              251.16825599999999
+            ]
+          }
+        ],
+        "fall": []
+      }
+    },
+    {
+      "id": "ppe-image1306",
+      "path": "images/ppe-image1306.jpg",
+      "source": "ppe",
+      "source_image": "images/test/image1306.jpg",
+      "source_label": "labels/test/image1306.txt",
+      "original_sha256": "c721d70e91cb39cc23addd34bf59df64a27df9b20d7cd58eae12fe884b568832",
+      "jpeg_sha256": "c721d70e91cb39cc23addd34bf59df64a27df9b20d7cd58eae12fe884b568832",
+      "label_sha256": "511299fb93d21feca6695ec40322ecada024821e9bc968989bb274dc45ba8837",
+      "width": 768,
+      "height": 1024,
+      "truth": {
+        "person": [
+          {
+            "label": "person",
+            "box": [
+              83.19590400000001,
+              230.256128,
+              345.779712,
+              908.767744
+            ]
+          },
+          {
+            "label": "person",
+            "box": [
+              340.92019200000004,
+              244.70374400000003,
+              656.0282880000001,
+              923.21536
+            ]
+          }
+        ],
+        "ppe": [
+          {
+            "label": "no_helmet",
+            "box": [
+              92.61619200000001,
+              258.97574399999996,
+              178.884096,
+              370.415616
+            ]
+          },
+          {
+            "label": "no_helmet",
+            "box": [
+              427.799808,
+              257.26361599999996,
+              594.792192,
+              368.703488
+            ]
+          }
+        ],
+        "fall": []
+      }
+    },
+    {
+      "id": "ppe-image913",
+      "path": "images/ppe-image913.jpg",
+      "source": "ppe",
+      "source_image": "images/test/image913.jpg",
+      "source_label": "labels/test/image913.txt",
+      "original_sha256": "d42c645672ea42b583f93bca3189f24a0fd8d3d2cd290f7cdf266ae8680cfe51",
+      "jpeg_sha256": "d42c645672ea42b583f93bca3189f24a0fd8d3d2cd290f7cdf266ae8680cfe51",
+      "label_sha256": "5ec6954ffc73dd9d6848b037a7e30b6d671d35f8b3b3835c96a075e52d4618e1",
+      "width": 640,
+      "height": 640,
+      "truth": {
+        "person": [
+          {
+            "label": "person",
+            "box": [
+              174.9296,
+              53.96000000000001,
+              368.29983999999996,
+              417.49983999999995
+            ]
+          }
+        ],
+        "ppe": [
+          {
+            "label": "hardhat",
+            "box": [
+              203.57984,
+              72.30016,
+              279.30016,
+              110.12031999999999
+            ]
+          }
+        ],
+        "fall": []
+      }
+    },
+    {
+      "id": "ppe-image538",
+      "path": "images/ppe-image538.jpg",
+      "source": "ppe",
+      "source_image": "images/test/image538.jpg",
+      "source_label": "labels/test/image538.txt",
+      "original_sha256": "af04552d1aeb177c85188df628c7d751ffbd35358e9f8b8e9418cf1d74124e39",
+      "jpeg_sha256": "af04552d1aeb177c85188df628c7d751ffbd35358e9f8b8e9418cf1d74124e39",
+      "label_sha256": "3785395a839ee7a81d00921893a60348ba02967b34b80004922ee9fe1d19d95c",
+      "width": 640,
+      "height": 640,
+      "truth": {
+        "person": [],
+        "ppe": [
+          {
+            "label": "hardhat",
+            "box": [
+              212.68032000000002,
+              6.59008,
+              281.16032,
+              82.97024
+            ]
+          },
+          {
+            "label": "hardhat",
+            "box": [
+              316.72032,
+              148.81024000000002,
+              383.88000000000005,
+              235.72992
+            ]
+          },
+          {
+            "label": "hardhat",
+            "box": [
+              441.82016000000004,
+              156.72,
+              518.2003199999999,
+              258.11008000000004
+            ]
+          },
+          {
+            "label": "hardhat",
+            "box": [
+              578.76992,
+              135.65024,
+              640.0,
+              222.56032
+            ]
+          }
+        ],
+        "fall": []
+      }
+    },
+    {
+      "id": "ppe-image459",
+      "path": "images/ppe-image459.jpg",
+      "source": "ppe",
+      "source_image": "images/test/image459.jpg",
+      "source_label": "labels/test/image459.txt",
+      "original_sha256": "7e4557a2239a15d72a85233b5bbd4bdc0cb79e2ac70ba5c327acba2882d1956e",
+      "jpeg_sha256": "7e4557a2239a15d72a85233b5bbd4bdc0cb79e2ac70ba5c327acba2882d1956e",
+      "label_sha256": "963d48b3e7431470dd84e68dd7f6050d33ff98cbbdcf6fb6d20d8fcefcf6e6d3",
+      "width": 640,
+      "height": 640,
+      "truth": {
+        "person": [
+          {
+            "label": "person",
+            "box": [
+              185.0,
+              176.70016,
+              445.54976000000005,
+              640.0
+            ]
+          }
+        ],
+        "ppe": [
+          {
+            "label": "hardhat",
+            "box": [
+              360.64992000000007,
+              190.28992,
+              421.99968,
+              299.29984
+            ]
+          }
+        ],
+        "fall": []
+      }
+    },
+    {
+      "id": "ppe-image548",
+      "path": "images/ppe-image548.jpg",
+      "source": "ppe",
+      "source_image": "images/test/image548.jpg",
+      "source_label": "labels/test/image548.txt",
+      "original_sha256": "c021147be3bac51ab4b170af7340551e96bbd4ad4f6f7d278a7d515c29ffb5b4",
+      "jpeg_sha256": "c021147be3bac51ab4b170af7340551e96bbd4ad4f6f7d278a7d515c29ffb5b4",
+      "label_sha256": "44aeefc4e2e22fd2550208daeb995e04aeb1d8b657d7869b506380ec6752315b",
+      "width": 640,
+      "height": 640,
+      "truth": {
+        "person": [
+          {
+            "label": "person",
+            "box": [
+              463.28,
+              110.56960000000001,
+              638.68992,
+              455.05984
+            ]
+          },
+          {
+            "label": "person",
+            "box": [
+              295.76991999999996,
+              140.5904,
+              558.08992,
+              497.7302400000001
+            ]
+          },
+          {
+            "label": "person",
+            "box": [
+              219.92032,
+              159.55968000000001,
+              381.11008,
+              504.04992000000004
+            ]
+          }
+        ],
+        "ppe": [
+          {
+            "label": "hardhat",
+            "box": [
+              325.92960000000005,
+              139.99008,
+              470.78976,
+              241.38976
+            ]
+          },
+          {
+            "label": "hardhat",
+            "box": [
+              241.64992,
+              147.88960000000003,
+              345.68960000000004,
+              234.80992
+            ]
+          },
+          {
+            "label": "hardhat",
+            "box": [
+              497.12991999999997,
+              113.26015999999998,
+              602.47968,
+              193.5904
+            ]
+          }
+        ],
+        "fall": []
+      }
+    },
+    {
+      "id": "ppe-image401",
+      "path": "images/ppe-image401.jpg",
+      "source": "ppe",
+      "source_image": "images/test/image401.jpg",
+      "source_label": "labels/test/image401.txt",
+      "original_sha256": "9bf120a9e1d18aaaa736151a896633607942e399d0e842c2b987dbedba3e65e0",
+      "jpeg_sha256": "9bf120a9e1d18aaaa736151a896633607942e399d0e842c2b987dbedba3e65e0",
+      "label_sha256": "b01577e35545c7082468d88ff3e2e852cc937ac9c65e8ec0780570944f1bd571",
+      "width": 640,
+      "height": 640,
+      "truth": {
+        "person": [
+          {
+            "label": "person",
+            "box": [
+              160.76,
+              94.27007999999998,
+              465.38016,
+              569.4201599999999
+            ]
+          }
+        ],
+        "ppe": [
+          {
+            "label": "hardhat",
+            "box": [
+              240.93984,
+              102.80991999999999,
+              356.0496,
+              153.46016
+            ]
+          }
+        ],
+        "fall": []
+      }
+    },
+    {
+      "id": "fall-fall028",
+      "path": "images/fall-fall028.jpg",
+      "source": "fall",
+      "source_image": "fall_dataset/images/val/fall028.jpg",
+      "source_label": "fall_dataset/labels/val/fall028.txt",
+      "original_sha256": "e7d447bd3a79fa6ef5a56c880552436ddf80a0792dea49a14eccd4909fb528d6",
+      "jpeg_sha256": "e7d447bd3a79fa6ef5a56c880552436ddf80a0792dea49a14eccd4909fb528d6",
+      "label_sha256": "8b4d7782a948f76cdf5d8171151174c036e442c62c2aef7a3ee5871861b1ac13",
+      "width": 275,
+      "height": 183,
+      "truth": {
+        "person": [
+          {
+            "label": "person",
+            "box": [
+              1.3936999999999893,
+              1.6139685000000066,
+              257.8125,
+              134.9333115
+            ]
+          }
+        ],
+        "ppe": [],
+        "fall": [
+          {
+            "label": "fall_detected",
+            "box": [
+              1.3936999999999893,
+              1.6139685000000066,
+              257.8125,
+              134.9333115
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "fall-fall002",
+      "path": "images/fall-fall002.jpg",
+      "source": "fall",
+      "source_image": "fall_dataset/images/val/fall002.jpg",
+      "source_label": "fall_dataset/labels/val/fall002.txt",
+      "original_sha256": "b1fc19c1955a263596de57d8a0cac5c28b153cb234a6401de5b7e60952c17c7d",
+      "jpeg_sha256": "b1fc19c1955a263596de57d8a0cac5c28b153cb234a6401de5b7e60952c17c7d",
+      "label_sha256": "abca0f104be2b6d579c4f4c0e97037d384d1a8fa49805af3b7c15b70bd67083f",
+      "width": 612,
+      "height": 408,
+      "truth": {
+        "person": [
+          {
+            "label": "person",
+            "box": [
+              157.13528399999998,
+              28.77379199999999,
+              461.067948,
+              316.165728
+            ]
+          }
+        ],
+        "ppe": [],
+        "fall": [
+          {
+            "label": "fall_detected",
+            "box": [
+              157.13528399999998,
+              28.77379199999999,
+              461.067948,
+              316.165728
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "fall-fall013",
+      "path": "images/fall-fall013.jpg",
+      "source": "fall",
+      "source_image": "fall_dataset/images/val/fall013.jpg",
+      "source_label": "fall_dataset/labels/val/fall013.txt",
+      "original_sha256": "397d7f2cc1f07a680cd37aa13ed8acd613b36fa8f37a4185aeddab1ffa157e00",
+      "jpeg_sha256": "397d7f2cc1f07a680cd37aa13ed8acd613b36fa8f37a4185aeddab1ffa157e00",
+      "label_sha256": "8ae380c46aa78bdc868fae30f75a4494f8ee130e100904234aad7046daf9eb5b",
+      "width": 275,
+      "height": 183,
+      "truth": {
+        "person": [
+          {
+            "label": "person",
+            "box": [
+              55.7431875,
+              76.8674115,
+              186.7397125,
+              131.6815845
+            ]
+          }
+        ],
+        "ppe": [],
+        "fall": [
+          {
+            "label": "fall_detected",
+            "box": [
+              55.7431875,
+              76.8674115,
+              186.7397125,
+              131.6815845
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "fall-fall032",
+      "path": "images/fall-fall032.jpg",
+      "source": "fall",
+      "source_image": "fall_dataset/images/val/fall032.jpg",
+      "source_label": "fall_dataset/labels/val/fall032.txt",
+      "original_sha256": "00c47696573651e984594da7ba3e1b2cc16ff8552a218d4dbf6312e6c596757c",
+      "jpeg_sha256": "00c47696573651e984594da7ba3e1b2cc16ff8552a218d4dbf6312e6c596757c",
+      "label_sha256": "4237aface9debe5ba2d14e9d7ff840bcf77f037b5bba4d1c18ff452068a3e768",
+      "width": 275,
+      "height": 183,
+      "truth": {
+        "person": [
+          {
+            "label": "person",
+            "box": [
+              85.4731625,
+              48.0666885,
+              265.7095375,
+              132.6106755
+            ]
+          }
+        ],
+        "ppe": [],
+        "fall": [
+          {
+            "label": "fall_detected",
+            "box": [
+              85.4731625,
+              48.0666885,
+              265.7095375,
+              132.6106755
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "fall-fall051",
+      "path": "images/fall-fall051.jpg",
+      "source": "fall",
+      "source_image": "fall_dataset/images/val/fall051.jpg",
+      "source_label": "fall_dataset/labels/val/fall051.txt",
+      "original_sha256": "5c211f813f6dea6ff8e4fa9944d95dbf958bf3801a480e07bcf42d910673cd1c",
+      "jpeg_sha256": "5c211f813f6dea6ff8e4fa9944d95dbf958bf3801a480e07bcf42d910673cd1c",
+      "label_sha256": "e3fa02352d2d04f56aa55c228588b37683e32b18b25a14ceb264b406c244bf6f",
+      "width": 640,
+      "height": 480,
+      "truth": {
+        "person": [
+          {
+            "label": "person",
+            "box": [
+              182.69536000000002,
+              358.58136,
+              503.83008000000007,
+              479.99976000000004
+            ]
+          }
+        ],
+        "ppe": [],
+        "fall": [
+          {
+            "label": "fall_detected",
+            "box": [
+              182.69536000000002,
+              358.58136,
+              503.83008000000007,
+              479.99976000000004
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "fall-not fallen028",
+      "path": "images/fall-not fallen028.jpg",
+      "source": "fall",
+      "source_image": "fall_dataset/images/val/not fallen028.png",
+      "source_label": "fall_dataset/labels/val/not fallen028.txt",
+      "original_sha256": "063c6d5896c147b260debf4b6039aaacec8c1e5792cd8682b4b24923ac459f1e",
+      "jpeg_sha256": "40eff8d75384aca7520d00e41cb642d2950e775427773527ccce0112fb76def3",
+      "label_sha256": "2432b10686c034d9860369f579b4edafcbb150cc232988709f1a743baddd4e1b",
+      "width": 320,
+      "height": 240,
+      "truth": {
+        "person": [
+          {
+            "label": "person",
+            "box": [
+              72.62416,
+              73.19148000000001,
+              135.03536,
+              219.00708
+            ]
+          }
+        ],
+        "ppe": [],
+        "fall": []
+      }
+    },
+    {
+      "id": "fall-not fallen017",
+      "path": "images/fall-not fallen017.jpg",
+      "source": "fall",
+      "source_image": "fall_dataset/images/val/not fallen017.jpg",
+      "source_label": "fall_dataset/labels/val/not fallen017.txt",
+      "original_sha256": "9e1681a428155f5c3fed5a770107af677c4c76dfa3a7c62673847612e079c608",
+      "jpeg_sha256": "9e1681a428155f5c3fed5a770107af677c4c76dfa3a7c62673847612e079c608",
+      "label_sha256": "2576d94b74f8fd292d37eff0eaccc468ea0c02df44810ec6d0113a0c23a5a2c5",
+      "width": 1400,
+      "height": 858,
+      "truth": {
+        "person": [
+          {
+            "label": "person",
+            "box": [
+              506.0811,
+              125.11527599999995,
+              801.6896999999999,
+              836.939532
+            ]
+          },
+          {
+            "label": "person",
+            "box": [
+              818.2432999999999,
+              529.506549,
+              983.7835,
+              822.7494989999999
+            ]
+          }
+        ],
+        "ppe": [],
+        "fall": []
+      }
+    },
+    {
+      "id": "fall-not fallen015",
+      "path": "images/fall-not fallen015.jpg",
+      "source": "fall",
+      "source_image": "fall_dataset/images/val/not fallen015.jpg",
+      "source_label": "fall_dataset/labels/val/not fallen015.txt",
+      "original_sha256": "f52ddd199c3a9f68a7dec81a26258370f48a1b67e9b75f445792b89cf28f298e",
+      "jpeg_sha256": "f52ddd199c3a9f68a7dec81a26258370f48a1b67e9b75f445792b89cf28f298e",
+      "label_sha256": "544ad5e1644946059f7c6dabdb3acddfbfb26cb29fff5f2328f16b44467c26ab",
+      "width": 1300,
+      "height": 956,
+      "truth": {
+        "person": [
+          {
+            "label": "person",
+            "box": [
+              401.3945,
+              13.56038199999999,
+              790.1231000000001,
+              867.8582339999999
+            ]
+          }
+        ],
+        "ppe": [],
+        "fall": []
+      }
+    },
+    {
+      "id": "fall-not fallen004",
+      "path": "images/fall-not fallen004.jpg",
+      "source": "fall",
+      "source_image": "fall_dataset/images/val/not fallen004.jpg",
+      "source_label": "fall_dataset/labels/val/not fallen004.txt",
+      "original_sha256": "265a26ff5cf6eb32f264e5b2c3db34aec499db350c24054e8db05bebe256f9cf",
+      "jpeg_sha256": "265a26ff5cf6eb32f264e5b2c3db34aec499db350c24054e8db05bebe256f9cf",
+      "label_sha256": "605449a8e0e2ea0ab1dfb87230d3b619e7aa5a3e882bc03fb6cd15f3d77d3119",
+      "width": 275,
+      "height": 183,
+      "truth": {
+        "person": [
+          {
+            "label": "person",
+            "box": [
+              77.11137500000001,
+              21.124238999999992,
+              214.611375,
+              181.85057700000002
+            ]
+          }
+        ],
+        "ppe": [],
+        "fall": []
+      }
+    },
+    {
+      "id": "fall-not fallen008",
+      "path": "images/fall-not fallen008.jpg",
+      "source": "fall",
+      "source_image": "fall_dataset/images/val/not fallen008.jpg",
+      "source_label": "fall_dataset/labels/val/not fallen008.txt",
+      "original_sha256": "cb4f6e8faf1e3da16dfec87be9985e38d09edef56d23b690a573232bf4ccf77e",
+      "jpeg_sha256": "cb4f6e8faf1e3da16dfec87be9985e38d09edef56d23b690a573232bf4ccf77e",
+      "label_sha256": "0211bbc049c1b75a049a88eff41aecbbf3291c33a0d9940e735b826ad0abc317",
+      "width": 299,
+      "height": 450,
+      "truth": {
+        "person": [
+          {
+            "label": "person",
+            "box": [
+              17.585087,
+              72.34042500000001,
+              226.09572699999998,
+              434.04277500000006
+            ]
+          }
+        ],
+        "ppe": [],
+        "fall": []
+      }
+    }
+  ]
+}

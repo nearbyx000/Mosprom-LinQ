@@ -1,0 +1,29 @@
+:root { color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #101418; color: #e6edf3; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { width: min(1040px, 92vw); margin: 48px auto; }
+header, .toolbar, .controls, footer, nav { display: flex; gap: 18px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+h1 { font-size: clamp(2rem, 6vw, 3rem); letter-spacing: -0.04em; margin: 8px 0 0; }
+h2 { font-size: 1rem; font-weight: 600; margin: 0; }
+p { color: #a7b0bc; line-height: 1.6; }
+.eyebrow { color: #79d8c2; font-size: 0.75rem; letter-spacing: 0.16em; }
+.badge { font-size: 0.85rem; border: 1px solid #334051; border-radius: 999px; padding: 8px 14px; }
+.intro { margin: 18px 0 28px; }
+.camera { border: 1px solid #303943; border-radius: 16px; overflow: hidden; background: #151c23; }
+.toolbar, .controls { padding: 18px 22px; }
+#status { color: #a7b0bc; font-size: 0.85rem; }
+#status[data-state="live"] { color: #79d8c2; }
+#status[data-state="error"] { color: #ffb396; }
+.viewer { position: relative; min-height: 260px; aspect-ratio: 16 / 9; background: #07090b; }
+img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.message { position: absolute; inset: 0; display: grid; place-content: center; padding: 28px; text-align: center; background: #0c1117; }
+.message p { max-width: 480px; margin-bottom: 0; }
+[hidden] { display: none !important; }
+.controls p { font-size: 0.85rem; margin: 0; }
+button { background: #79d8c2; color: #0b211c; font: inherit; font-weight: 600; border: 0; border-radius: 8px; padding: 11px 16px; cursor: pointer; }
+button:hover { background: #9be7d6; }
+button:focus-visible, a:focus-visible { outline: 2px solid #e6edf3; outline-offset: 4px; }
+footer { margin-top: 24px; color: #a7b0bc; font-size: 0.85rem; }
+a { color: #99caff; text-decoration: none; }
+a:hover { text-decoration: underline; }
+@media (max-width: 540px) { main { margin-top: 28px; } .toolbar, .controls { padding: 16px; } .controls button { width: 100%; } footer { align-items: flex-start; } nav { gap: 12px; } }

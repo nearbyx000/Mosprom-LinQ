@@ -1,0 +1,40 @@
+{
+  "review_timing": "Before any model inference; image selection unchanged",
+  "review_method": "Visual inspection of all 20 ground-truth tiles and originals for suspect annotations",
+  "exclude_person_metric": ["ppe-image1270"],
+  "exclusion_reason": "Several distant, overlapping background shoppers are unlabelled; score all 20 against publisher labels separately, but do not treat this image as complete person ground truth.",
+  "replacements": {
+    "ppe-image538": {
+      "person": [
+        {"label":"person","box":[0,64,79,360]},
+        {"label":"person","box":[23,4,286,598]},
+        {"label":"person","box":[173,145,387,640]},
+        {"label":"person","box":[309,151,523,640]},
+        {"label":"person","box":[426,126,640,640]}
+      ],
+      "reason": "Publisher has no person boxes despite four full workers and a truncated worker on the left. Added visible-body boxes manually."
+    },
+    "ppe-image1306": {
+      "person": [
+        {"label":"person","box":[0,260,354,958]},
+        {"label":"person","box":[296,271,768,882]}
+      ],
+      "ppe": [
+        {"label":"no_helmet","box":[0,267,111,501]},
+        {"label":"no_helmet","box":[424,274,651,512]}
+      ],
+      "reason": "Publisher boxes are shifted and head boxes miss the visible heads; manually aligned to visible people and heads."
+    },
+    "fall-not fallen017": {
+      "person": [
+        {"label":"person","box":[506.0811,125.115276,801.6897,836.939532]}
+      ],
+      "reason": "Removed publisher walking-class box on the dog."
+    }
+  },
+  "limitations": [
+    "One annotator (Codex visual review), no independent second review.",
+    "Fall labels retain the publisher's static fall/post-fall interpretation; these images do not prove a temporal fall event.",
+    "Small internet diagnostic; training overlap unknown."
+  ]
+}

@@ -1,0 +1,135 @@
+"""Concurrency checks with a slow fake backend, not a TPU benchmark."""
+import threading
+import time
+
+import numpy as np
+
+from safesight.logic import Detection
+from safesight.pipeline import CameraWorker
+from safesight.runtime import Frame, Latest
+from safesight.storage import EventStore
+
+
+class Camera:
+    def __init__(self):
+        self.released = False
+
+    def isOpened(self):
+        return True
+
+    def read(self):
+        time.sleep(1 / 30)
+        return True, np.zeros((48, 64, 3), dtype=np.uint8)
+
+    def release(self):
+        self.released = True
+
+
+class BlockedBackend:
+    name = "TEST FAKE / NOT TPU"
+
+    def __init__(self):
+        self.entered = threading.Event()
+        self.unblock = threading.Event()
+
+    def infer(self, frame):
+        self.entered.set()
+        if not self.unblock.wait(timeout=10):
+            raise TimeoutError("Test did not release the fake backend")
+        return [Detection("person", 0.9, (20, 10, 40, 40))]
+
+
+def test_preview_survives_slow_inference_and_events_persist(tmp_path):
+    evidence = tmp_path / "evidence"
+    evidence.mkdir()
+    camera = Camera()
+    backend = BlockedBackend()
+    store = EventStore(tmp_path / "events.sqlite")
+    worker = CameraWorker({"id": "test", "name": "Test", "source": 0,
+                           "zones": [{"id": "danger", "name": "Danger", "points": [[0, 0], [1, 0], [1, 1], [0, 1]]}]},
+                          store, evidence, mode="local", backend=backend, camera_factory=lambda *_: camera)
+    worker.start()
+    try:
+        assert backend.entered.wait(timeout=5)
+        initial = worker.metrics.snapshot()["counts"]
+        deadline = time.perf_counter() + 5
+        while time.perf_counter() < deadline:
+            counts = worker.metrics.snapshot()["counts"]
+            if (counts.get("preview", 0) >= initial.get("preview", 0) + 5
+                    and counts.get("capture", 0) >= initial.get("capture", 0) + 5):
+                break
+            time.sleep(0.01)
+        # Prove actual progress while inference cannot possibly finish. CI
+        # runner scheduling does not need to meet a hardware FPS benchmark.
+        assert counts["capture"] >= initial.get("capture", 0) + 5
+        assert counts["preview"] >= initial.get("preview", 0) + 5
+        assert counts.get("detections", 0) == 0
+        backend.unblock.set()
+        deadline = time.monotonic() + 5
+        while not store.list_events() and time.monotonic() < deadline:
+            time.sleep(0.05)
+        events = store.list_events()
+        assert len(events) == 1
+        assert (evidence / events[0]["evidence_file"]).read_bytes().startswith(bytes([255, 216]))
+        assert worker.status()["tpu_response_received"] is False
+    finally:
+        backend.unblock.set()
+        worker.stop()
+    assert camera.released
+    assert all(not thread.is_alive() for thread in worker.threads)
+
+
+def test_latest_slot_drops_history_and_wakes_on_close():
+    slot = Latest()
+    for number in range(100):
+        slot.put(number)
+    sequence, value = slot.get()
+    assert (sequence, value) == (100, 99)
+    result = []
+    waiter = threading.Thread(target=lambda: result.append(slot.get(sequence, timeout=5)))
+    waiter.start()
+    slot.close()
+    waiter.join(timeout=1)
+    assert result == [(100, None)]
+
+
+def test_storage_backpressure_drops_observations_without_duplicate_incident(tmp_path):
+    evidence = tmp_path/'evidence'
+    evidence.mkdir()
+    store = EventStore(tmp_path/'events.sqlite')
+    worker = CameraWorker({'id':'c','name':'Test','source':0,
+                           'zones':[{'id':'z','name':'Zone','points':[[0,0],[1,0],[1,1],[0,1]]}]},
+                          store,evidence,mode='local')
+    worker.max_result_age = 30  # Scheduling budget, not an industrial freshness setting.
+    entered,release = threading.Event(),threading.Event()
+    original = worker.recorder.record
+    def slow_record(*args):
+        entered.set()
+        if not release.wait(10):
+            raise TimeoutError('Test did not release storage')
+        return original(*args)
+    worker.recorder.record = slow_record
+    thread = threading.Thread(target=worker.events_loop)
+    worker.threads.append(thread)
+    thread.start()
+    stamp = time.perf_counter()-1
+    def enqueue(seq):
+        worker.enqueue_result((Frame(seq,stamp+seq*.001,time.time(),np.zeros((40,40,3),np.uint8),1),
+                               [Detection('person',.9,(5,5,20,30))],None))
+    try:
+        for seq in range(1,4):
+            enqueue(seq)
+        assert entered.wait(5)
+        for seq in range(4,24):
+            enqueue(seq)
+        assert worker.metrics.snapshot()['counts']['event_results_dropped'] > 0
+        release.set()
+        deadline = time.monotonic()+5
+        while (worker.warning_snapshot is None or worker.warning_snapshot['frame_id']!=23) and time.monotonic()<deadline:
+            time.sleep(.01)
+        assert worker.warning_snapshot['frame_id'] == 23
+        assert len(store.list_events()) == 1
+        assert len(list(evidence.glob('*.jpg'))) == 1
+    finally:
+        release.set()
+        worker.stop()

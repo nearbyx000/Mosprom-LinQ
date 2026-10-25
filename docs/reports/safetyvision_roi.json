@@ -1,0 +1,122 @@
+{
+  "backend": "LOCAL ONNX CPU / NOT TPU",
+  "status": "exploratory ROI; not deployed",
+  "model_sha256": "a4d72ccc21a7552c0dbcb4610528372cbeb850c287cf580d9659df80ca8a6915",
+  "manifest_sha256": "614e64037b8a1eb5c576b6531ec905f3e4769c53db689dcc5bc8eae619e7701e",
+  "primary_predictions_sha256": "a34cf316a62e717dd42919500d31a85e49ccbe26ab92532e84278311f326a824",
+  "protocol": {
+    "person_confidence": 0.45,
+    "max_people": 10,
+    "head_fraction": 0.45,
+    "horizontal_padding": 0.1,
+    "vertical_padding": 0.05,
+    "min_crop_side": 16,
+    "jpeg_quality": 95,
+    "hardhat_confidence": 0.4,
+    "no_helmet_confidence": 0.45
+  },
+  "variants": {
+    "body": {
+      "ppe_10": {
+        "total": {
+          "TP": 11,
+          "FP": 2,
+          "FN": 11,
+          "precision": 0.8461538461538461,
+          "recall": 0.5,
+          "F1": 0.6285714285714286
+        },
+        "per_class": {
+          "hardhat": {
+            "TP": 9,
+            "FP": 2,
+            "FN": 1,
+            "precision": 0.8181818181818182,
+            "recall": 0.9,
+            "F1": 0.8571428571428571
+          },
+          "no_helmet": {
+            "TP": 2,
+            "FP": 0,
+            "FN": 10,
+            "precision": 1.0,
+            "recall": 0.16666666666666666,
+            "F1": 0.2857142857142857
+          }
+        },
+        "cases": 10,
+        "positive_cases": 10,
+        "detected_positive_cases": 7,
+        "false_alarm_cases": 1,
+        "false_alarms": 2,
+        "duration_seconds": null,
+        "false_alarms_per_hour": null,
+        "matching_iou": 0.5
+      },
+      "no_helmet_presence_10": {
+        "TP": 2,
+        "FP": 0,
+        "FN": 3,
+        "precision": 1.0,
+        "recall": 0.4,
+        "F1": 0.5714285714285714,
+        "TN": 5,
+        "images": 10,
+        "note": "Image-level class presence; no IoU requirement; not temporal alerts"
+      },
+      "crops": 29,
+      "note": "Full-frame predictions plus per-person ROI; class-aware NMS, no extra conflict/temporal filtering"
+    },
+    "head": {
+      "ppe_10": {
+        "total": {
+          "TP": 9,
+          "FP": 4,
+          "FN": 13,
+          "precision": 0.6923076923076923,
+          "recall": 0.4090909090909091,
+          "F1": 0.5142857142857142
+        },
+        "per_class": {
+          "hardhat": {
+            "TP": 9,
+            "FP": 2,
+            "FN": 1,
+            "precision": 0.8181818181818182,
+            "recall": 0.9,
+            "F1": 0.8571428571428571
+          },
+          "no_helmet": {
+            "TP": 0,
+            "FP": 2,
+            "FN": 12,
+            "precision": 0.0,
+            "recall": 0.0,
+            "F1": 0.0
+          }
+        },
+        "cases": 10,
+        "positive_cases": 10,
+        "detected_positive_cases": 5,
+        "false_alarm_cases": 4,
+        "false_alarms": 4,
+        "duration_seconds": null,
+        "false_alarms_per_hour": null,
+        "matching_iou": 0.5
+      },
+      "no_helmet_presence_10": {
+        "TP": 2,
+        "FP": 0,
+        "FN": 3,
+        "precision": 1.0,
+        "recall": 0.4,
+        "F1": 0.5714285714285714,
+        "TN": 5,
+        "images": 10,
+        "note": "Image-level class presence; no IoU requirement; not temporal alerts"
+      },
+      "crops": 29,
+      "note": "Full-frame predictions plus per-person ROI; class-aware NMS, no extra conflict/temporal filtering"
+    }
+  }
+}

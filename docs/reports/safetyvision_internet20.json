@@ -1,0 +1,597 @@
+{
+  "kind": "public-internet-mini-diagnostic-NOT-independent-heldout",
+  "backend": "LOCAL ONNX CPU / NOT LinQ TPU",
+  "images": 20,
+  "selection_seed": "safesight-internet20-v1",
+  "manifest_sha256": "dd571ce2b410cb5b7a92f8963a86b744a8cf5cf97e113de6d5bda4efab893234",
+  "model_sha256": {
+    "SafetyVision": "a4d72ccc21a7552c0dbcb4610528372cbeb850c287cf580d9659df80ca8a6915",
+    "YOLOv8n": "6cb3b08fb058b14ed6a20c58b04a4f753e1b8462a9c89225014b5c5d3ab42a20"
+  },
+  "thresholds": {
+    "no_helmet": 0.45,
+    "fall_detected": 0.45,
+    "hardhat": 0.4,
+    "YOLOv8n_person": 0.25
+  },
+  "metrics": {
+    "SafetyVision": {
+      "person_reviewed_19": {
+        "total": {
+          "TP": 1,
+          "FP": 0,
+          "FN": 30,
+          "precision": 1.0,
+          "recall": 0.03225806451612903,
+          "F1": 0.0625
+        },
+        "per_class": {
+          "person": {
+            "TP": 1,
+            "FP": 0,
+            "FN": 30,
+            "precision": 1.0,
+            "recall": 0.03225806451612903,
+            "F1": 0.0625
+          }
+        },
+        "cases": 19,
+        "positive_cases": 19,
+        "detected_positive_cases": 1,
+        "false_alarm_cases": 0,
+        "false_alarms": 0,
+        "duration_seconds": null,
+        "false_alarms_per_hour": null,
+        "matching_iou": 0.5
+      },
+      "ppe_10": {
+        "total": {
+          "TP": 8,
+          "FP": 1,
+          "FN": 14,
+          "precision": 0.8888888888888888,
+          "recall": 0.36363636363636365,
+          "F1": 0.5161290322580645
+        },
+        "per_class": {
+          "hardhat": {
+            "TP": 8,
+            "FP": 0,
+            "FN": 2,
+            "precision": 1.0,
+            "recall": 0.8,
+            "F1": 0.8888888888888888
+          },
+          "no_helmet": {
+            "TP": 0,
+            "FP": 1,
+            "FN": 12,
+            "precision": 0.0,
+            "recall": 0.0,
+            "F1": 0.0
+          }
+        },
+        "cases": 10,
+        "positive_cases": 10,
+        "detected_positive_cases": 5,
+        "false_alarm_cases": 1,
+        "false_alarms": 1,
+        "duration_seconds": null,
+        "false_alarms_per_hour": null,
+        "matching_iou": 0.5
+      },
+      "fall_10": {
+        "total": {
+          "TP": 4,
+          "FP": 0,
+          "FN": 1,
+          "precision": 1.0,
+          "recall": 0.8,
+          "F1": 0.8888888888888888
+        },
+        "per_class": {
+          "fall_detected": {
+            "TP": 4,
+            "FP": 0,
+            "FN": 1,
+            "precision": 1.0,
+            "recall": 0.8,
+            "F1": 0.8888888888888888
+          }
+        },
+        "cases": 10,
+        "positive_cases": 5,
+        "detected_positive_cases": 4,
+        "false_alarm_cases": 0,
+        "false_alarms": 0,
+        "duration_seconds": null,
+        "false_alarms_per_hour": null,
+        "matching_iou": 0.5
+      }
+    },
+    "YOLOv8n": {
+      "person_reviewed_19": {
+        "total": {
+          "TP": 25,
+          "FP": 2,
+          "FN": 6,
+          "precision": 0.9259259259259259,
+          "recall": 0.8064516129032258,
+          "F1": 0.8620689655172413
+        },
+        "per_class": {
+          "person": {
+            "TP": 25,
+            "FP": 2,
+            "FN": 6,
+            "precision": 0.9259259259259259,
+            "recall": 0.8064516129032258,
+            "F1": 0.8620689655172413
+          }
+        },
+        "cases": 19,
+        "positive_cases": 19,
+        "detected_positive_cases": 17,
+        "false_alarm_cases": 2,
+        "false_alarms": 2,
+        "duration_seconds": null,
+        "false_alarms_per_hour": null,
+        "matching_iou": 0.5
+      }
+    },
+    "SafetyVision_before": {
+      "person_reviewed_19": {
+        "total": {
+          "TP": 1,
+          "FP": 0,
+          "FN": 30,
+          "precision": 1.0,
+          "recall": 0.03225806451612903,
+          "F1": 0.0625
+        },
+        "per_class": {
+          "person": {
+            "TP": 1,
+            "FP": 0,
+            "FN": 30,
+            "precision": 1.0,
+            "recall": 0.03225806451612903,
+            "F1": 0.0625
+          }
+        },
+        "cases": 19,
+        "positive_cases": 19,
+        "detected_positive_cases": 1,
+        "false_alarm_cases": 0,
+        "false_alarms": 0,
+        "duration_seconds": null,
+        "false_alarms_per_hour": null,
+        "matching_iou": 0.5
+      },
+      "ppe_10": {
+        "total": {
+          "TP": 8,
+          "FP": 1,
+          "FN": 14,
+          "precision": 0.8888888888888888,
+          "recall": 0.36363636363636365,
+          "F1": 0.5161290322580645
+        },
+        "per_class": {
+          "hardhat": {
+            "TP": 8,
+            "FP": 0,
+            "FN": 2,
+            "precision": 1.0,
+            "recall": 0.8,
+            "F1": 0.8888888888888888
+          },
+          "no_helmet": {
+            "TP": 0,
+            "FP": 1,
+            "FN": 12,
+            "precision": 0.0,
+            "recall": 0.0,
+            "F1": 0.0
+          }
+        },
+        "cases": 10,
+        "positive_cases": 10,
+        "detected_positive_cases": 5,
+        "false_alarm_cases": 1,
+        "false_alarms": 1,
+        "duration_seconds": null,
+        "false_alarms_per_hour": null,
+        "matching_iou": 0.5
+      },
+      "fall_10": {
+        "total": {
+          "TP": 4,
+          "FP": 0,
+          "FN": 1,
+          "precision": 1.0,
+          "recall": 0.8,
+          "F1": 0.8888888888888888
+        },
+        "per_class": {
+          "fall_detected": {
+            "TP": 4,
+            "FP": 0,
+            "FN": 1,
+            "precision": 1.0,
+            "recall": 0.8,
+            "F1": 0.8888888888888888
+          }
+        },
+        "cases": 10,
+        "positive_cases": 5,
+        "detected_positive_cases": 4,
+        "false_alarm_cases": 0,
+        "false_alarms": 0,
+        "duration_seconds": null,
+        "false_alarms_per_hour": null,
+        "matching_iou": 0.5
+      }
+    }
+  },
+  "timings": [
+    {
+      "id": "ppe-image1178",
+      "SV_local_onnx_ms": 165.8380999997462,
+      "YOLO_local_onnx_ms": 41.297199999462464
+    },
+    {
+      "id": "ppe-image1264",
+      "SV_local_onnx_ms": 116.62369999976363,
+      "YOLO_local_onnx_ms": 53.466800000023795
+    },
+    {
+      "id": "ppe-image1231",
+      "SV_local_onnx_ms": 132.66250000015134,
+      "YOLO_local_onnx_ms": 41.24409999894851
+    },
+    {
+      "id": "ppe-image1270",
+      "SV_local_onnx_ms": 172.91930000101274,
+      "YOLO_local_onnx_ms": 36.898499998642365
+    },
+    {
+      "id": "ppe-image1306",
+      "SV_local_onnx_ms": 197.68549999935203,
+      "YOLO_local_onnx_ms": 38.30259999995178
+    },
+    {
+      "id": "ppe-image913",
+      "SV_local_onnx_ms": 132.04399999995076,
+      "YOLO_local_onnx_ms": 38.82460000022547
+    },
+    {
+      "id": "ppe-image538",
+      "SV_local_onnx_ms": 173.72509999950125,
+      "YOLO_local_onnx_ms": 37.940899999739486
+    },
+    {
+      "id": "ppe-image459",
+      "SV_local_onnx_ms": 112.86379999910423,
+      "YOLO_local_onnx_ms": 40.14959999949497
+    },
+    {
+      "id": "ppe-image548",
+      "SV_local_onnx_ms": 198.3217999986664,
+      "YOLO_local_onnx_ms": 36.66259999954491
+    },
+    {
+      "id": "ppe-image401",
+      "SV_local_onnx_ms": 168.90160000002652,
+      "YOLO_local_onnx_ms": 39.581400000315625
+    },
+    {
+      "id": "fall-fall028",
+      "SV_local_onnx_ms": 172.2458000003826,
+      "YOLO_local_onnx_ms": 37.63269999944896
+    },
+    {
+      "id": "fall-fall002",
+      "SV_local_onnx_ms": 104.9844999997731,
+      "YOLO_local_onnx_ms": 36.75450000082492
+    },
+    {
+      "id": "fall-fall013",
+      "SV_local_onnx_ms": 195.59939999999187,
+      "YOLO_local_onnx_ms": 37.202800000159186
+    },
+    {
+      "id": "fall-fall032",
+      "SV_local_onnx_ms": 106.05030000078841,
+      "YOLO_local_onnx_ms": 64.87289999859058
+    },
+    {
+      "id": "fall-fall051",
+      "SV_local_onnx_ms": 110.69550000138406,
+      "YOLO_local_onnx_ms": 64.58229999952891
+    },
+    {
+      "id": "fall-not fallen028",
+      "SV_local_onnx_ms": 186.205300000438,
+      "YOLO_local_onnx_ms": 37.248999999064836
+    },
+    {
+      "id": "fall-not fallen017",
+      "SV_local_onnx_ms": 195.18149999930756,
+      "YOLO_local_onnx_ms": 38.50430000056804
+    },
+    {
+      "id": "fall-not fallen015",
+      "SV_local_onnx_ms": 109.8046000006434,
+      "YOLO_local_onnx_ms": 63.51159999940137
+    },
+    {
+      "id": "fall-not fallen004",
+      "SV_local_onnx_ms": 195.0920999988739,
+      "YOLO_local_onnx_ms": 36.951799998860224
+    },
+    {
+      "id": "fall-not fallen008",
+      "SV_local_onnx_ms": 194.9771999989025,
+      "YOLO_local_onnx_ms": 42.86890000003041
+    }
+  ],
+  "presence_metrics": {
+    "SafetyVision": {
+      "person_reviewed_19": {
+        "TP": 1,
+        "FP": 0,
+        "FN": 18,
+        "precision": 1.0,
+        "recall": 0.05263157894736842,
+        "F1": 0.1,
+        "TN": 0,
+        "images": 19,
+        "note": "Image-level class presence; no IoU requirement; not temporal alerts"
+      },
+      "no_helmet_10": {
+        "TP": 1,
+        "FP": 0,
+        "FN": 4,
+        "precision": 1.0,
+        "recall": 0.2,
+        "F1": 0.3333333333333333,
+        "TN": 5,
+        "images": 10,
+        "note": "Image-level class presence; no IoU requirement; not temporal alerts"
+      },
+      "fall_10": {
+        "TP": 4,
+        "FP": 0,
+        "FN": 1,
+        "precision": 1.0,
+        "recall": 0.8,
+        "F1": 0.8888888888888888,
+        "TN": 5,
+        "images": 10,
+        "note": "Image-level class presence; no IoU requirement; not temporal alerts"
+      }
+    },
+    "YOLOv8n": {
+      "person_reviewed_19": {
+        "TP": 17,
+        "FP": 0,
+        "FN": 2,
+        "precision": 1.0,
+        "recall": 0.8947368421052632,
+        "F1": 0.9444444444444444,
+        "TN": 0,
+        "images": 19,
+        "note": "Image-level class presence; no IoU requirement; not temporal alerts"
+      }
+    },
+    "SafetyVision_before": {
+      "person_reviewed_19": {
+        "TP": 1,
+        "FP": 0,
+        "FN": 18,
+        "precision": 1.0,
+        "recall": 0.05263157894736842,
+        "F1": 0.1,
+        "TN": 0,
+        "images": 19,
+        "note": "Image-level class presence; no IoU requirement; not temporal alerts"
+      },
+      "no_helmet_10": {
+        "TP": 1,
+        "FP": 0,
+        "FN": 4,
+        "precision": 1.0,
+        "recall": 0.2,
+        "F1": 0.3333333333333333,
+        "TN": 5,
+        "images": 10,
+        "note": "Image-level class presence; no IoU requirement; not temporal alerts"
+      },
+      "fall_10": {
+        "TP": 4,
+        "FP": 0,
+        "FN": 1,
+        "precision": 1.0,
+        "recall": 0.8,
+        "F1": 0.8888888888888888,
+        "TN": 5,
+        "images": 10,
+        "note": "Image-level class presence; no IoU requirement; not temporal alerts"
+      }
+    }
+  },
+  "review_sha256": "520d25aa1b2873ee5c9798f4a3f6fe70440453199fffb481e6436c56eb513d21",
+  "metrics_publisher": {
+    "SafetyVision": {
+      "person_20": {
+        "total": {
+          "TP": 1,
+          "FP": 0,
+          "FN": 29,
+          "precision": 1.0,
+          "recall": 0.03333333333333333,
+          "F1": 0.06451612903225806
+        },
+        "per_class": {
+          "person": {
+            "TP": 1,
+            "FP": 0,
+            "FN": 29,
+            "precision": 1.0,
+            "recall": 0.03333333333333333,
+            "F1": 0.06451612903225806
+          }
+        },
+        "cases": 20,
+        "positive_cases": 19,
+        "detected_positive_cases": 1,
+        "false_alarm_cases": 0,
+        "false_alarms": 0,
+        "duration_seconds": null,
+        "false_alarms_per_hour": null,
+        "matching_iou": 0.5
+      },
+      "ppe_10": {
+        "total": {
+          "TP": 8,
+          "FP": 1,
+          "FN": 14,
+          "precision": 0.8888888888888888,
+          "recall": 0.36363636363636365,
+          "F1": 0.5161290322580645
+        },
+        "per_class": {
+          "hardhat": {
+            "TP": 8,
+            "FP": 0,
+            "FN": 2,
+            "precision": 1.0,
+            "recall": 0.8,
+            "F1": 0.8888888888888888
+          },
+          "no_helmet": {
+            "TP": 0,
+            "FP": 1,
+            "FN": 12,
+            "precision": 0.0,
+            "recall": 0.0,
+            "F1": 0.0
+          }
+        },
+        "cases": 10,
+        "positive_cases": 10,
+        "detected_positive_cases": 5,
+        "false_alarm_cases": 1,
+        "false_alarms": 1,
+        "duration_seconds": null,
+        "false_alarms_per_hour": null,
+        "matching_iou": 0.5
+      }
+    },
+    "YOLOv8n": {
+      "person_20": {
+        "total": {
+          "TP": 25,
+          "FP": 8,
+          "FN": 5,
+          "precision": 0.7575757575757576,
+          "recall": 0.8333333333333334,
+          "F1": 0.7936507936507936
+        },
+        "per_class": {
+          "person": {
+            "TP": 25,
+            "FP": 8,
+            "FN": 5,
+            "precision": 0.7575757575757576,
+            "recall": 0.8333333333333334,
+            "F1": 0.7936507936507936
+          }
+        },
+        "cases": 20,
+        "positive_cases": 19,
+        "detected_positive_cases": 17,
+        "false_alarm_cases": 4,
+        "false_alarms": 8,
+        "duration_seconds": null,
+        "false_alarms_per_hour": null,
+        "matching_iou": 0.5
+      }
+    },
+    "SafetyVision_before": {
+      "person_20": {
+        "total": {
+          "TP": 2,
+          "FP": 0,
+          "FN": 28,
+          "precision": 1.0,
+          "recall": 0.06666666666666667,
+          "F1": 0.125
+        },
+        "per_class": {
+          "person": {
+            "TP": 2,
+            "FP": 0,
+            "FN": 28,
+            "precision": 1.0,
+            "recall": 0.06666666666666667,
+            "F1": 0.125
+          }
+        },
+        "cases": 20,
+        "positive_cases": 19,
+        "detected_positive_cases": 2,
+        "false_alarm_cases": 0,
+        "false_alarms": 0,
+        "duration_seconds": null,
+        "false_alarms_per_hour": null,
+        "matching_iou": 0.5
+      },
+      "ppe_10": {
+        "total": {
+          "TP": 8,
+          "FP": 1,
+          "FN": 14,
+          "precision": 0.8888888888888888,
+          "recall": 0.36363636363636365,
+          "F1": 0.5161290322580645
+        },
+        "per_class": {
+          "hardhat": {
+            "TP": 8,
+            "FP": 0,
+            "FN": 2,
+            "precision": 1.0,
+            "recall": 0.8,
+            "F1": 0.8888888888888888
+          },
+          "no_helmet": {
+            "TP": 0,
+            "FP": 1,
+            "FN": 12,
+            "precision": 0.0,
+            "recall": 0.0,
+            "F1": 0.0
+          }
+        },
+        "cases": 10,
+        "positive_cases": 10,
+        "detected_positive_cases": 5,
+        "false_alarm_cases": 1,
+        "false_alarms": 1,
+        "duration_seconds": null,
+        "false_alarms_per_hour": null,
+        "matching_iou": 0.5
+      }
+    }
+  },
+  "notes": [
+    "Single-image detections, not temporally confirmed RuleEngine alarms.",
+    "PPE evaluated on 10 PPE images; fall on 10 fall images; person on the same 20 images.",
+    "Public dataset training overlap with SafetyVision/COCO is unknown; small stratified diagnostic only.",
+    "Publisher annotations and pre-inference visual corrections are scored separately.",
+    "Reviewed person metrics exclude ppe-image1270 because background people lack complete labels."
+  ],
+  "legacy_decoder_sha256": "e64523ac9f9588b09a281ce01bf5d13f48cf5167d6f369cd2f5e43c4a6a6dc91"
+}

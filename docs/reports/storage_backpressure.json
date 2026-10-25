@@ -1,0 +1,17 @@
+{
+  "kind": "synthetic-storage-backpressure-regression-NOT-neural-accuracy",
+  "before_revision": "4fdd7ff1fae6f13dce0a6408a9b605ecfa8c84c9",
+  "protocol": "Block durable storage during one continuous person/zone incident, overflow the 8-item result queue with 20 observations, then release storage.",
+  "expected_events": 1,
+  "results": {
+    "before": {
+      "events_for_one_continuous_incident": 2,
+      "new_regression_test_passed": false
+    },
+    "after": {
+      "events_for_one_continuous_incident": 1,
+      "new_regression_test_passed": true
+    }
+  },
+  "reproduction": "python -m pytest -q tests/test_pipeline.py::test_storage_backpressure_drops_observations_without_duplicate_incident"
+}

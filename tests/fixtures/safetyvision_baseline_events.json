@@ -1,0 +1,243 @@
+{
+  "kind": "synthetic-rule-regression-NOT-model-accuracy",
+  "predictions": {
+    "sustained_no_helmet": [
+      {
+        "camera_id": "evaluation",
+        "zone_id": "any",
+        "violation_type": "no_helmet",
+        "track_id": 2,
+        "confidence": 0.9,
+        "box": [
+          35,
+          10,
+          65,
+          40
+        ]
+      }
+    ],
+    "orphan_no_helmet": [
+      {
+        "camera_id": "evaluation",
+        "zone_id": "any",
+        "violation_type": "no_helmet",
+        "track_id": 1,
+        "confidence": 0.9,
+        "box": [
+          35,
+          10,
+          65,
+          40
+        ]
+      }
+    ],
+    "ambiguous_helmet": [
+      {
+        "camera_id": "evaluation",
+        "zone_id": "any",
+        "violation_type": "no_helmet",
+        "track_id": 2,
+        "confidence": 0.82,
+        "box": [
+          35,
+          10,
+          65,
+          40
+        ]
+      }
+    ],
+    "stronger_helmet": [
+      {
+        "camera_id": "evaluation",
+        "zone_id": "any",
+        "violation_type": "no_helmet",
+        "track_id": 2,
+        "confidence": 0.8,
+        "box": [
+          35,
+          10,
+          65,
+          40
+        ]
+      }
+    ],
+    "body_is_not_head": [
+      {
+        "camera_id": "evaluation",
+        "zone_id": "any",
+        "violation_type": "no_helmet",
+        "track_id": 2,
+        "confidence": 0.9,
+        "box": [
+          35,
+          150,
+          65,
+          180
+        ]
+      }
+    ],
+    "overlapping_people": [
+      {
+        "camera_id": "evaluation",
+        "zone_id": "any",
+        "violation_type": "no_helmet",
+        "track_id": 3,
+        "confidence": 0.9,
+        "box": [
+          35,
+          10,
+          65,
+          40
+        ]
+      }
+    ],
+    "transient_no_helmet": [],
+    "sustained_fall_without_coco": [
+      {
+        "camera_id": "evaluation",
+        "zone_id": "any",
+        "violation_type": "fall_detected",
+        "track_id": 1,
+        "confidence": 0.9,
+        "box": [
+          10,
+          100,
+          200,
+          200
+        ]
+      }
+    ],
+    "transient_fall": [],
+    "fall_long_gaps": [
+      {
+        "camera_id": "evaluation",
+        "zone_id": "any",
+        "violation_type": "fall_detected",
+        "track_id": 1,
+        "confidence": 0.9,
+        "box": [
+          10,
+          100,
+          200,
+          200
+        ]
+      }
+    ],
+    "fall_duplicate_timestamps": [
+      {
+        "camera_id": "evaluation",
+        "zone_id": "any",
+        "violation_type": "fall_detected",
+        "track_id": 1,
+        "confidence": 0.9,
+        "box": [
+          10,
+          100,
+          200,
+          200
+        ]
+      }
+    ],
+    "primary_only_is_unknown": [],
+    "head_jitter_same_person": [],
+    "helmet_on_other_worker": [
+      {
+        "camera_id": "evaluation",
+        "zone_id": "any",
+        "violation_type": "no_helmet",
+        "track_id": 2,
+        "confidence": 0.9,
+        "box": [
+          35,
+          10,
+          65,
+          40
+        ]
+      }
+    ],
+    "borderline_true_no_helmet": [
+      {
+        "camera_id": "evaluation",
+        "zone_id": "any",
+        "violation_type": "no_helmet",
+        "track_id": 2,
+        "confidence": 0.48,
+        "box": [
+          35,
+          10,
+          65,
+          40
+        ]
+      }
+    ],
+    "two_separate_falls": [
+      {
+        "camera_id": "evaluation",
+        "zone_id": "any",
+        "violation_type": "fall_detected",
+        "track_id": 1,
+        "confidence": 0.9,
+        "box": [
+          10,
+          100,
+          200,
+          200
+        ]
+      },
+      {
+        "camera_id": "evaluation",
+        "zone_id": "any",
+        "violation_type": "fall_detected",
+        "track_id": 1,
+        "confidence": 0.9,
+        "box": [
+          10,
+          100,
+          200,
+          200
+        ]
+      }
+    ]
+  },
+  "metrics": {
+    "total": {
+      "TP": 6,
+      "FP": 7,
+      "FN": 2,
+      "precision": 0.46153846153846156,
+      "recall": 0.75,
+      "F1": 0.5714285714285714
+    },
+    "per_class": {
+      "fall_detected": {
+        "TP": 3,
+        "FP": 2,
+        "FN": 0,
+        "precision": 0.6,
+        "recall": 1.0,
+        "F1": 0.75
+      },
+      "no_helmet": {
+        "TP": 3,
+        "FP": 5,
+        "FN": 2,
+        "precision": 0.375,
+        "recall": 0.6,
+        "F1": 0.46153846153846156
+      }
+    },
+    "cases": 16,
+    "positive_cases": 7,
+    "detected_positive_cases": 5,
+    "false_alarm_cases": 7,
+    "false_alarms": 7,
+    "duration_seconds": null,
+    "false_alarms_per_hour": null,
+    "matching_iou": 0.5
+  },
+  "cases_sha256": "fedb90841933dab3c7b96a6ff7b115b83ae618e87ce934fa84b76e3e275368ef",
+  "engine_sha256": "7c51452c736181f75e8f39e0d975b8c9ae15b6fc3f5e7545582aa1d25bd55103",
+  "original_cases_file_sha256": "ff06f85b44f8a5c3a21e848e94cf60bd03394087f46d01bee4d6633020262e0f",
+  "cases_hash_format": "canonical_json_v1",
+  "normalization_note": "Annotations and baseline predictions unchanged; canonical JSON digest makes the input check independent of Git line endings. Original raw input hash preserved separately."
+}

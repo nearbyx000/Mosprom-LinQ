@@ -1,0 +1,52 @@
+# Local Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+
+# Local settings and credentials
+.env
+.env.*
+!.env.example
+*.ovpn
+*.key
+*.pem
+.ipynb_checkpoints/
+
+# Editor / macOS
+.DS_Store
+~$*.pptx
+.idea/
+.vscode/
+
+# Data and recordings (add intentionally as needed)
+data/
+recordings/
+runs/
+
+# Local inference assets and Linux-only vendor SDK (not used by the web MVP)
+models/
+tpu_framework_*/
+
+# Local server logs
+*.log
+
+# Local model weights, vendor deliveries, and historical patch installers.
+*.onnx
+*.pt
+*.tpu
+*.zip
+v2/
+.safesight-*/
+SafeSight_SafetyVision_Stage1/
+SafeSight_SafetyVision_WEB_Integration/
+SafeSight_JPEG_WEB_Patch/
+/linq_rtt_probe.py
+/linq_rtt_probe_resized.py
+/linq_wsl_smoke.py
+/linq_wsl_smoke_resized.py
+
+# Superseded local slide draft, retained on disk; current deck is linked in README.
+/docs/defense/SafeSight-defense.pptx
